@@ -3,6 +3,20 @@
 let scene, camera, renderer, sphere, arrow, axes;
 const container = document.getElementById('bloch-canvas-container');
 
+// --- Internal State (Local Database Simulation) ---
+let simulationHistory = JSON.parse(localStorage.getItem('quantum_ai_history') || '[]');
+
+function saveToVirtualDB(type, input, result, description) {
+    const entry = {
+        timestamp: new Date().toISOString(),
+        type, input, result, description
+    };
+    simulationHistory.unshift(entry);
+    if (simulationHistory.length > 50) simulationHistory.pop();
+    localStorage.setItem('quantum_ai_history', JSON.stringify(simulationHistory));
+    logTrace(`Data persisted to Virtual DB: ${type}`);
+}
+
 // --- Initialization ---
 
 function init() {
@@ -13,7 +27,7 @@ function init() {
     logTrace("Awaiting synaptic signal instructions...");
 }
 
-// --- 3D Particle Field ---
+// --- Pulse Particle Field ---
 function initParticleField() {
     const pContainer = document.getElementById('particle-container');
     // Note: Simple CSS/JS particles for background depth
@@ -95,29 +109,51 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// --- Quantum Logic Functions ---
+// --- Quantum Logic (Ported from Python) ---
+const QuantumGHA = {
+    state: [ { re: 1, im: 0 }, { re: 0, im: 0 } ], // |0>
+
+    applyGate(gateType) {
+        const H = [[ {re: 1/Math.sqrt(2), im: 0}, {re: 1/Math.sqrt(2), im: 0} ], [ {re: 1/Math.sqrt(2), im: 0}, {re: -1/Math.sqrt(2), im: 0} ]];
+        const X = [[ {re: 0, im: 0}, {re: 1, im: 0} ], [ {re: 1, im: 0}, {re: 0, im: 0} ]];
+        const Y = [[ {re: 0, im: 0}, {re: 0, im: -1} ], [ {re: 0, im: 1}, {re: 0, im: 0} ]];
+        const Z = [[ {re: 1, im: 0}, {re: 0, im: 0} ], [ {re: 0, im: 0}, {re: -1, im: 0} ]];
+        
+        let gate = (gateType === 'H') ? H : (gateType === 'X') ? X : (gateType === 'Y') ? Y : Z;
+        
+        // Matrix Multiplication
+        let newState = [
+            this.add(this.mul(gate[0][0], this.state[0]), this.mul(gate[0][1], this.state[1])),
+            this.add(this.mul(gate[1][0], this.state[0]), this.mul(gate[1][1], this.state[1]))
+        ];
+        
+        this.state = newState;
+        return this.getBloch();
+    },
+
+    // Complex Helpers
+    add: (a, b) => ({ re: a.re + b.re, im: a.im + b.im }),
+    mul: (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }),
+    
+    getBloch() {
+        const alpha = Math.sqrt(this.state[0].re**2 + this.state[0].im**2);
+        const theta = 2 * Math.acos(Math.min(1, alpha));
+        const phi = Math.atan2(this.state[1].im, this.state[1].re) - Math.atan2(this.state[0].im, this.state[0].re);
+        return { theta, phi };
+    }
+};
 
 async function applyGate(gateType) {
     logTrace(`Executing Quantum Operator: [${gateType}]`);
-    try {
-        const response = await fetch('/api/quantum/gate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gate: gateType })
-        });
-        const data = await response.json();
-        updateBlochVisual(data.theta, data.phi, data.state_vector);
-    } catch (err) {
-        logTrace(`CRITICAL: Gate execution failure - ${err.message}`, "error");
-    }
+    const { theta, phi } = QuantumGHA.applyGate(gateType);
+    updateBlochVisual(theta, phi, [`(${QuantumGHA.state[0].re.toFixed(2)})`, `(${QuantumGHA.state[1].re.toFixed(2)})`]);
+    saveToVirtualDB("quantum", { gate: gateType }, { theta, phi }, `Applied ${gateType} Gate`);
 }
 
 async function resetQuantum() {
     logTrace("Resetting wave function coordinates...");
-    try {
-        await fetch('/api/quantum/reset');
-        updateBlochVisual(0, 0, ["(1+0j)", "(0+0j)"]);
-    } catch (err) { logTrace("Reset failed", "error"); }
+    QuantumGHA.state = [ { re: 1, im: 0 }, { re: 0, im: 0 } ];
+    updateBlochVisual(0, 0, ["(1.00)", "(0.00)"]);
 }
 
 function updateBlochVisual(theta, phi, vector) {
@@ -134,27 +170,34 @@ function updateBlochVisual(theta, phi, vector) {
     document.getElementById('coords-display').innerText = `θ: ${theta.toFixed(3)}, φ: ${phi.toFixed(3)}`;
 }
 
-// --- Hebbian Workbench Logic ---
+// --- Hebbian Logic (Ported from Python) ---
+const HebbianJS = {
+    weights: Array.from({length: 5}, () => Array.from({length: 10}, () => Math.random() * 0.1)),
+    
+    process(input, rule) {
+        // Simplified Oja's for JS port
+        let projection = this.weights.map(w => w.reduce((sum, val, i) => sum + val * input[i], 0));
+        
+        // Weight Update (Mock Learning to prevent overhead in JS)
+        this.weights = this.weights.map((w, i) => w.map((val, j) => val + 0.01 * (projection[i] * input[j] - projection[i]**2 * val)));
+        
+        return {
+            projection: projection,
+            weight_stats: this.weights.map(w => Math.sqrt(w.reduce((s, v) => s + v*v, 0) / w.length))
+        };
+    }
+};
 
 async function runAnalysis() {
     const rule = document.getElementById('rule-select').value;
     logTrace(`Processing neural input via [${rule.toUpperCase()}] rule...`);
     
     const inputData = Array.from({ length: 10 }, () => Math.random() * 2 - 1);
-
-    try {
-        const response = await fetch('/api/analyze/hebbian', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: inputData, rule: rule })
-        });
-        const result = await response.json();
-        
-        updateHebbianUI(result);
-        logTrace(`Synaptic weight map updated. Projection variance stable.`);
-    } catch (err) {
-        logTrace(`Neural loop error: ${err.message}`, "error");
-    }
+    const result = HebbianJS.process(inputData, rule);
+    
+    updateHebbianUI(result);
+    logTrace(`Synaptic weight map updated. Projection variance stable.`);
+    saveToVirtualDB("hebbian", { vector: inputData, rule }, result, "Hebbian Analysis");
 }
 
 function updateHebbianUI(data) {
