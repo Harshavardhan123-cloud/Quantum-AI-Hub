@@ -39,3 +39,15 @@ class HebbianEngine:
         elif rule == "bcm": y = self.train_bcm(x_norm)
         else: y = self.train_oja(x_norm)
         return y.flatten().tolist(), [float(np.std(w)) for w in self.weights]
+
+    def train_batch(self, batch_data: List[List[float]], rule: str = "oja") -> List[dict]:
+        results = []
+        for x in batch_data:
+            projection, weights = self.transform(x, rule)
+            results.append({
+                "projection": projection,
+                "weights": weights,
+                "latent_x": projection[0] if len(projection) > 0 else 0,
+                "latent_y": projection[1] if len(projection) > 1 else 0
+            })
+        return results

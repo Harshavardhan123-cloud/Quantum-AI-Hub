@@ -1,7 +1,9 @@
 // --- Quantum Hub Elite Core Logic ---
 
 let scene, camera, renderer, sphere, arrow, axes;
+let latentChart, convergenceChart;
 const container = document.getElementById('bloch-canvas-container');
+const simulationPoints = [];
 
 // --- Internal State (Local Database Simulation) ---
 let simulationHistory = JSON.parse(localStorage.getItem('quantum_ai_history') || '[]');
@@ -22,6 +24,7 @@ function saveToVirtualDB(type, input, result, description) {
 function init() {
     initBlochSphere();
     initParticleField();
+    initCharts();
     setupEventListeners();
     logTrace("Neural core sequence initialized...");
     logTrace("Awaiting synaptic signal instructions...");
@@ -203,11 +206,110 @@ async function runAnalysis() {
         const result = await response.json();
         
         updateHebbianUI(result);
+        updateCharts(result.projection, result.weight_stats);
         logTrace(`Synaptic weight map updated. Projection variance stable.`);
-        fetchHistory(); // Refresh history
+        fetchHistory(); 
     } catch (err) {
         logTrace(`Neural loop error: ${err.message}`, "error");
     }
+}
+
+async function runBatchAnalysis() {
+    const rule = document.getElementById('rule-select').value;
+    logTrace(`Executing Batch Simulation [20 samples] via [${rule.toUpperCase()}]...`);
+
+    try {
+        const response = await fetch('/api/analyze/hebbian_batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ samples: 20, rule: rule })
+        });
+        const data = await response.json();
+        
+        data.results.forEach((res, index) => {
+            setTimeout(() => {
+                updateHebbianUI(res);
+                updateCharts(res.projection, res.weights);
+                if (index === data.results.length - 1) fetchHistory();
+            }, index * 50);
+        });
+        
+        logTrace(`Batch sequence complete. Latent space clusters converging.`);
+    } catch (err) {
+        logTrace(`Batch error: ${err.message}`, "error");
+    }
+}
+
+function initCharts() {
+    const ctxL = document.getElementById('latentChart').getContext('2d');
+    latentChart = new Chart(ctxL, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Latent Space Activity',
+                data: [],
+                backgroundColor: 'rgba(0, 242, 255, 0.6)',
+                borderColor: '#00f2ff',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            scales: {
+                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
+            }
+        }
+    });
+
+    const ctxC = document.getElementById('convergenceChart').getContext('2d');
+    convergenceChart = new Chart(ctxC, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Synaptic Stability',
+                data: [],
+                borderColor: '#7000ff',
+                tension: 0.4,
+                fill: true,
+                backgroundColor: 'rgba(112, 0, 255, 0.1)'
+            }]
+        },
+        options: {
+            scales: {
+                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
+            }
+        }
+    });
+}
+
+function updateCharts(projection, weights) {
+    // Latent Space (Scatter)
+    latentChart.data.datasets[0].data.push({ x: projection[0], y: projection[1] });
+    if (latentChart.data.datasets[0].data.length > 50) latentChart.data.datasets[0].data.shift();
+    latentChart.update('none');
+
+    // Convergence (Line)
+    const stability = weights.reduce((a, b) => a + b, 0) / weights.length;
+    convergenceChart.data.labels.push("");
+    convergenceChart.data.datasets[0].data.push(stability);
+    if (convergenceChart.data.datasets[0].data.length > 30) {
+        convergenceChart.data.labels.shift();
+        convergenceChart.data.datasets[0].data.shift();
+    }
+    convergenceChart.update('none');
+}
+
+function switchHebbianTab(tab) {
+    const views = ['matrix-view', 'latent-view', 'convergence-view'];
+    const tabs = ['tab-matrix', 'tab-latent', 'tab-convergence'];
+    
+    views.forEach(v => document.getElementById(v).style.display = 'none');
+    tabs.forEach(t => document.getElementById(t).classList.remove('active'));
+    
+    document.getElementById(`${tab}-view`).style.display = 'block';
+    document.getElementById(`tab-${tab}`).classList.add('active');
 }
 
 async function fetchHistory() {

@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
@@ -106,8 +107,10 @@
                         <label>Neural Input Stream</label>
                         <div class="vector-input">
                             <button class="btn-elite-action" onclick="runAnalysis()">
-                                <span>Execute Synaptic Analysis</span>
-                                <div class="btn-glow"></div>
+                                <span>Single Analysis</span>
+                            </button>
+                            <button class="btn-primary" onclick="runBatchAnalysis()" style="margin-top:10px; width:100%">
+                                <span>Execute Batch Simulation</span>
                             </button>
                         </div>
                     </div>
@@ -126,11 +129,18 @@
 
                 <div class="visualization-panel glass">
                     <div class="panel-tabs">
-                        <button class="tab-btn active">Weight Matrix</button>
-                        <button class="tab-btn">Latent Space</button>
+                        <button id="tab-matrix" class="tab-btn active" onclick="switchHebbianTab('matrix')">Weight Matrix</button>
+                        <button id="tab-latent" class="tab-btn" onclick="switchHebbianTab('latent')">Latent Space</button>
+                        <button id="tab-convergence" class="tab-btn" onclick="switchHebbianTab('convergence')">Convergence</button>
                     </div>
-                    <div class="matrix-container">
+                    <div id="matrix-view" class="matrix-container">
                         <div id="weight-matrix" class="weight-matrix"></div>
+                    </div>
+                    <div id="latent-view" class="chart-container glass" style="display:none; padding:20px;">
+                        <canvas id="latentChart"></canvas>
+                    </div>
+                    <div id="convergence-view" class="chart-container glass" style="display:none; padding:20px;">
+                        <canvas id="convergenceChart"></canvas>
                     </div>
                     <div id="trace-log" class="trace-log code">
                         > Neural core initialized...<br>

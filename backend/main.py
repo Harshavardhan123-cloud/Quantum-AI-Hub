@@ -31,12 +31,27 @@ class HebbianRequest(BaseModel):
 class GateRequest(BaseModel):
     gate: str
 
+class BatchRequest(BaseModel):
+    samples: int = 20
+    rule: str = "oja"
+
 @app.post("/api/analyze/hebbian")
 async def analyze_hebbian(request: HebbianRequest, db: Session = Depends(get_db)):
     projection, weight_stats = hebbian_engine.transform(request.data, rule=request.rule)
-    db.add(SimulationLog(type="hebbian", input_data={"vector": request.data, "rule": request.rule}, result_data={"projection": projection}, description=f"Hebbian Analysis: {request.rule}"))
+    db.add(SimulationLog(type="hebbian", input_data={"vector": request.data, "rule": request.rule}, result_data={"projection": projection, "weight_stats": weight_stats}, description=f"Hebbian Analysis: {request.rule}"))
     db.commit()
     return {"projection": projection, "weight_stats": weight_stats, "rule_applied": request.rule}
+
+@app.post("/api/analyze/hebbian_batch")
+async def analyze_hebbian_batch(request: BatchRequest, db: Session = Depends(get_db)):
+    batch_data = [np.random.normal(0, 1, 10).tolist() for _ in range(request.samples)]
+    results = hebbian_engine.train_batch(batch_data, rule=request.rule)
+    
+    # Log the last point of the batch
+    last_res = results[-1]
+    db.add(SimulationLog(type="hebbian_batch", input_data={"samples": request.samples, "rule": request.rule}, result_data={"final_projection": last_res["projection"]}, description=f"Batch Training: {request.samples} samples"))
+    db.commit()
+    return {"results": results, "rule_applied": request.rule}
 
 @app.post("/api/quantum/gate")
 async def apply_gate(request: GateRequest, db: Session = Depends(get_db)):
