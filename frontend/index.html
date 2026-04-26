@@ -25,6 +25,7 @@
                 <a href="#hero">Neural Core</a>
                 <a href="#simulator">Quantum Logic</a>
                 <a href="#hebbian">Hebbian Space</a>
+                <a href="#history">System History</a>
             </div>
         </nav>
 
@@ -135,6 +136,31 @@
                         > Neural core initialized...<br>
                         > Awaiting synaptic signal...
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="history" class="history-section">
+            <div class="section-header">
+                <h2 class="section-title">Simulation History</h2>
+                <p>Retrieving persistent records from the SQLite database core.</p>
+            </div>
+            <div class="history-container glass">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Operation</th>
+                            <th>Details</th>
+                            <th>State/Projection</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <!-- Entries populated from DB -->
+                    </tbody>
+                </table>
+                <div class="table-actions" style="margin-top: 20px; text-align: center;">
+                    <button class="btn-secondary" onclick="fetchHistory()">Refresh Database Logs</button>
                 </div>
             </div>
         </section>

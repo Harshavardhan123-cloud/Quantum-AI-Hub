@@ -410,6 +410,30 @@ body {
 
 .trace-log { height: 150px; margin-top: 20px; background: #000; padding: 20px; border-radius: 15px; font-size: 0.8rem; color: #0f0; overflow-y: auto; opacity: 0.8; }
 
+/* History Table */
+.history-section { padding-top: 50px; }
+.history-container { padding: 40px; }
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    color: var(--text-mid);
+}
+.history-table th {
+    text-align: left;
+    padding: 15px;
+    border-bottom: 2px solid var(--glass-border);
+    color: var(--accent-primary);
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+.history-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--glass-border);
+}
+.history-table tr:hover { background: rgba(255,255,255,0.02); }
+
 /* Footer */
 .footer {
     margin-top: 100px;

@@ -193,11 +193,41 @@ async function runAnalysis() {
     logTrace(`Processing neural input via [${rule.toUpperCase()}] rule...`);
     
     const inputData = Array.from({ length: 10 }, () => Math.random() * 2 - 1);
-    const result = HebbianJS.process(inputData, rule);
-    
-    updateHebbianUI(result);
-    logTrace(`Synaptic weight map updated. Projection variance stable.`);
-    saveToVirtualDB("hebbian", { vector: inputData, rule }, result, "Hebbian Analysis");
+
+    try {
+        const response = await fetch('/api/analyze/hebbian', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: inputData, rule: rule })
+        });
+        const result = await response.json();
+        
+        updateHebbianUI(result);
+        logTrace(`Synaptic weight map updated. Projection variance stable.`);
+        fetchHistory(); // Refresh history
+    } catch (err) {
+        logTrace(`Neural loop error: ${err.message}`, "error");
+    }
+}
+
+async function fetchHistory() {
+    try {
+        const response = await fetch('/api/logs');
+        const logs = await response.json();
+        const body = document.getElementById('history-body');
+        body.innerHTML = '';
+        
+        logs.forEach(log => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+                <td><span class="badge ${log.type}">${log.type.toUpperCase()}</span></td>
+                <td>${log.description}</td>
+                <td class="code">${JSON.stringify(log.result_data).substring(0, 30)}...</td>
+            `;
+            body.appendChild(row);
+        });
+    } catch (err) { console.error("History fetch error", err); }
 }
 
 function updateHebbianUI(data) {
@@ -264,7 +294,10 @@ function scrollToSection(id) {
 }
 
 // Init on Load
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded', () => {
+    init();
+    fetchHistory();
+});
 window.addEventListener('resize', () => {
     if (renderer && container) {
         camera.aspect = container.clientWidth / container.clientHeight;
