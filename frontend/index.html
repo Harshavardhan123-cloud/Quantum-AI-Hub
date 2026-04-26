@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum AI Hub | Elite Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="particle-container"></div>
+    
+    <div id="app">
+        <nav class="navbar glass">
+            <div class="logo">
+                <span class="quantum-text">QUANTUM</span><span class="ai-text">AI</span>
+                <span class="badge">ELITE</span>
+            </div>
+            <div class="nav-links">
+                <a href="#hero">Neural Core</a>
+                <a href="#simulator">Quantum Logic</a>
+                <a href="#hebbian">Hebbian Space</a>
+            </div>
+        </nav>
+
+        <section id="hero" class="hero">
+            <div class="hero-content">
+                <div class="pre-title">Advancing Synthetic Cognition</div>
+                <h1 class="gradient-text">Unified Intelligence Platform</h1>
+                <p>A high-fidelity environment for simulating quantum logic gates and unsupervised synaptic plasticity. Bridging the gap between qubit decoherence and neural optimization.</p>
+                <div class="cta-group">
+                    <button class="btn-primary" onclick="scrollToSection('simulator')">Access Workspace</button>
+                    <button class="btn-secondary" onclick="scrollToSection('hebbian')">Hebbian Engine</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="simulator" class="simulator-section">
+            <div class="section-container">
+                <div class="section-info">
+                    <h2 class="section-title">Quantum Logic Terminal</h2>
+                    <p>Interface with the single-qubit state vector. Apply unitary transformations and observe wave function evolution on the Bloch Sphere.</p>
+                    
+                    <div class="gate-grid">
+                        <button class="gate-btn" onclick="applyGate('H')">H <span class="tooltip">Hadamard</span></button>
+                        <button class="gate-btn" onclick="applyGate('X')">X <span class="tooltip">Pauli-X</span></button>
+                        <button class="gate-btn" onclick="applyGate('Y')">Y <span class="tooltip">Pauli-Y</span></button>
+                        <button class="gate-btn" onclick="applyGate('Z')">Z <span class="tooltip">Pauli-Z</span></button>
+                        <button class="gate-btn" onclick="applyGate('S')">S <span class="tooltip">Phase</span></button>
+                        <button class="gate-btn" onclick="applyGate('T')">T <span class="tooltip">T-Gate</span></button>
+                        <button class="gate-btn reset" onclick="resetQuantum()">⟲ <span class="tooltip">Reset</span></button>
+                    </div>
+
+                    <div class="state-readout glass">
+                        <div class="readout-item">
+                            <span class="label">State Vector:</span>
+                            <span id="vector-display" class="code">|0⟩</span>
+                        </div>
+                        <div class="readout-item">
+                            <span class="label">Bloch Coords:</span>
+                            <span id="coords-display" class="code">θ:0.0, φ:0.0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="simulator-view glass">
+                    <div id="bloch-canvas-container"></div>
+                    <div class="visual-controls">
+                        <div class="slider-group">
+                            <label>Manual Projection (θ)</label>
+                            <input type="range" id="theta-slider" min="0" max="3.14" step="0.01" value="0">
+                        </div>
+                         <div class="slider-group">
+                            <label>Manual Phase (φ)</label>
+                            <input type="range" id="phi-slider" min="0" max="6.28" step="0.01" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="hebbian" class="hebbian-section">
+            <div class="section-header">
+                <h2 class="section-title">Synaptic Plasticity Workbench</h2>
+                <p>Simulating unsupervised feature extraction via biologically-inspired learning rules.</p>
+            </div>
+            
+            <div class="hebbian-grid">
+                <div class="config-panel glass">
+                    <h3>Engine Configuration</h3>
+                    <div class="field">
+                        <label>Learning Rule</label>
+                        <select id="rule-select" class="glass-select">
+                            <option value="oja">Oja's Rule (Normalization)</option>
+                            <option value="sanger">Sanger's Rule (PCA)</option>
+                            <option value="bcm">BCM Rule (Selectivity)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Neural Input Stream</label>
+                        <div class="vector-input">
+                            <button class="btn-elite-action" onclick="runAnalysis()">
+                                <span>Execute Synaptic Analysis</span>
+                                <div class="btn-glow"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="analysis-stats" class="stats-display glass">
+                        <div class="stat">
+                            <span class="stat-label">Projection Variance</span>
+                            <div class="stat-bar"><div id="variance-bar" style="width: 0%"></div></div>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Synaptic Activity</span>
+                            <div class="stat-bar"><div id="activity-bar" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visualization-panel glass">
+                    <div class="panel-tabs">
+                        <button class="tab-btn active">Weight Matrix</button>
+                        <button class="tab-btn">Latent Space</button>
+                    </div>
+                    <div class="matrix-container">
+                        <div id="weight-matrix" class="weight-matrix"></div>
+                    </div>
+                    <div id="trace-log" class="trace-log code">
+                        > Neural core initialized...<br>
+                        > Awaiting synaptic signal...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer glass">
+            <div class="footer-grid">
+                <div class="brand">
+                    <span class="quantum-text">QUANTUM</span>AI
+                </div>
+                <div class="status-indicator">
+                    <span class="dot"></span> Backend Engine: Online
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
