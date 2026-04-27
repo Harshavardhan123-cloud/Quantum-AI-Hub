@@ -50,12 +50,16 @@
                     
                     <div class="gate-grid">
                         <button class="gate-btn" onclick="applyGate('H')">H <span class="tooltip">Hadamard</span></button>
+                        <button class="gate-btn" onclick="applyGate('CNOT')">CX <span class="tooltip">CNOT (Entangle)</span></button>
                         <button class="gate-btn" onclick="applyGate('X')">X <span class="tooltip">Pauli-X</span></button>
                         <button class="gate-btn" onclick="applyGate('Y')">Y <span class="tooltip">Pauli-Y</span></button>
                         <button class="gate-btn" onclick="applyGate('Z')">Z <span class="tooltip">Pauli-Z</span></button>
-                        <button class="gate-btn" onclick="applyGate('S')">S <span class="tooltip">Phase</span></button>
-                        <button class="gate-btn" onclick="applyGate('T')">T <span class="tooltip">T-Gate</span></button>
                         <button class="gate-btn reset" onclick="resetQuantum()">⟲ <span class="tooltip">Reset</span></button>
+                    </div>
+
+                    <div class="circuit-view glass" style="margin-top: 20px; padding: 10px; height: 80px; overflow-x: auto;">
+                        <div id="circuit-wire-0" class="circuit-wire"></div>
+                        <div id="circuit-wire-1" class="circuit-wire"></div>
                     </div>
 
                     <div class="state-readout glass">
@@ -72,15 +76,8 @@
                 
                 <div class="simulator-view glass">
                     <div id="bloch-canvas-container"></div>
-                    <div class="visual-controls">
-                        <div class="slider-group">
-                            <label>Manual Projection (θ)</label>
-                            <input type="range" id="theta-slider" min="0" max="3.14" step="0.01" value="0">
-                        </div>
-                         <div class="slider-group">
-                            <label>Manual Phase (φ)</label>
-                            <input type="range" id="phi-slider" min="0" max="6.28" step="0.01" value="0">
-                        </div>
+                    <div class="quantum-analytics" style="padding: 10px; height: 180px;">
+                        <canvas id="quantumProbChart"></canvas>
                     </div>
                 </div>
             </div>

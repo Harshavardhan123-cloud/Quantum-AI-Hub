@@ -1,7 +1,7 @@
 // --- Quantum Hub Elite Core Logic ---
 
 let scene, camera, renderer, sphere, arrow, axes;
-let latentChart, convergenceChart;
+let latentChart, convergenceChart, quantumProbChart;
 const container = document.getElementById('bloch-canvas-container');
 const simulationPoints = [];
 
@@ -22,12 +22,17 @@ function saveToVirtualDB(type, input, result, description) {
 // --- Initialization ---
 
 function init() {
-    initBlochSphere();
-    initParticleField();
-    initCharts();
-    setupEventListeners();
-    logTrace("Neural core sequence initialized...");
-    logTrace("Awaiting synaptic signal instructions...");
+    try {
+        initBlochSphere();
+        initParticleField();
+        initCharts();
+        setupEventListeners();
+        logTrace("Neural core sequence initialized...");
+        logTrace("Awaiting synaptic signal instructions...");
+    } catch (err) {
+        console.error("Initialization failed:", err);
+        logTrace("System initialization error: Check console.", "error");
+    }
 }
 
 // --- Pulse Particle Field ---
@@ -148,9 +153,38 @@ const QuantumGHA = {
 
 async function applyGate(gateType) {
     logTrace(`Executing Quantum Operator: [${gateType}]`);
-    const { theta, phi } = QuantumGHA.applyGate(gateType);
-    updateBlochVisual(theta, phi, [`(${QuantumGHA.state[0].re.toFixed(2)})`, `(${QuantumGHA.state[1].re.toFixed(2)})`]);
-    saveToVirtualDB("quantum", { gate: gateType }, { theta, phi }, `Applied ${gateType} Gate`);
+    
+    try {
+        const response = await fetch('/api/quantum/gate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gate: gateType })
+        });
+        const data = await response.json();
+        
+        updateBlochVisual(data.theta, data.phi, ["|ψ⟩", " Hilbert State"]);
+        updateQuantumChart(data.probabilities, data.labels);
+        addGateToCircuit(gateType);
+        
+        logTrace(`Wave function transformed. Entanglement risk: ${gateType === 'CNOT' ? 'HIGH' : 'LOW'}`);
+    } catch (err) {
+        logTrace(`Quantum decoherence error: ${err.message}`, "error");
+    }
+}
+
+function updateQuantumChart(probs, labels) {
+    if (!quantumProbChart) return;
+    quantumProbChart.data.labels = labels;
+    quantumProbChart.data.datasets[0].data = probs;
+    quantumProbChart.update();
+}
+
+function addGateToCircuit(gate) {
+    const wire = document.getElementById('circuit-wire-0');
+    const gateEl = document.createElement('div');
+    gateEl.className = 'gate-node';
+    gateEl.innerText = gate;
+    wire.appendChild(gateEl);
 }
 
 async function resetQuantum() {
@@ -241,7 +275,15 @@ async function runBatchAnalysis() {
 }
 
 function initCharts() {
-    const ctxL = document.getElementById('latentChart').getContext('2d');
+    const latentEl = document.getElementById('latentChart');
+    const convergenceEl = document.getElementById('convergenceChart');
+    
+    if (!latentEl || !convergenceEl) {
+        console.error("Chart canvases not found");
+        return;
+    }
+
+    const ctxL = latentEl.getContext('2d');
     latentChart = new Chart(ctxL, {
         type: 'scatter',
         data: {
@@ -250,36 +292,69 @@ function initCharts() {
                 data: [],
                 backgroundColor: 'rgba(0, 242, 255, 0.6)',
                 borderColor: '#00f2ff',
-                pointRadius: 5
+                pointRadius: 6,
+                pointHoverRadius: 8
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
-                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
-            }
+                x: { grid: { color: '#222' }, ticks: { color: '#888' }, title: { display: true, text: 'Latent X', color: '#555' } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' }, title: { display: true, text: 'Latent Y', color: '#555' } }
+            },
+            plugins: { legend: { labels: { color: '#ccc' } } }
         }
     });
 
-    const ctxC = document.getElementById('convergenceChart').getContext('2d');
+    const ctxC = convergenceEl.getContext('2d');
     convergenceChart = new Chart(ctxC, {
         type: 'line',
         data: {
             labels: [],
             datasets: [{
-                label: 'Synaptic Stability',
+                label: 'Synaptic Stability (Convergence)',
                 data: [],
                 borderColor: '#7000ff',
+                borderWidth: 2,
                 tension: 0.4,
                 fill: true,
-                backgroundColor: 'rgba(112, 0, 255, 0.1)'
+                backgroundColor: 'rgba(112, 0, 255, 0.1)',
+                pointRadius: 0
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
-                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
-            }
+                x: { display: false },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' }, title: { display: true, text: 'Stability Index', color: '#555' } }
+            },
+            plugins: { legend: { labels: { color: '#ccc' } } }
+        }
+    });
+
+    const ctxQ = document.getElementById('quantumProbChart').getContext('2d');
+    quantumProbChart = new Chart(ctxQ, {
+        type: 'bar',
+        data: {
+            labels: ['|00⟩', '|01⟩', '|10⟩', '|11⟩'],
+            datasets: [{
+                label: 'State Probability Distribution',
+                data: [1, 0, 0, 0],
+                backgroundColor: 'rgba(0, 242, 255, 0.5)',
+                borderColor: '#00f2ff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 1, grid: { color: '#222' }, ticks: { color: '#888' } },
+                x: { grid: { display: false }, ticks: { color: '#888' } }
+            },
+            plugins: { legend: { display: false } }
         }
     });
 }
@@ -305,11 +380,25 @@ function switchHebbianTab(tab) {
     const views = ['matrix-view', 'latent-view', 'convergence-view'];
     const tabs = ['tab-matrix', 'tab-latent', 'tab-convergence'];
     
-    views.forEach(v => document.getElementById(v).style.display = 'none');
-    tabs.forEach(t => document.getElementById(t).classList.remove('active'));
+    views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.style.display = 'none';
+    });
     
-    document.getElementById(`${tab}-view`).style.display = 'block';
-    document.getElementById(`tab-${tab}`).classList.add('active');
+    tabs.forEach(t => {
+        const el = document.getElementById(t);
+        if (el) el.classList.remove('active');
+    });
+    
+    const activeView = document.getElementById(`${tab}-view`);
+    if (activeView) activeView.style.display = 'block';
+    
+    const activeTab = document.getElementById(`tab-${tab}`);
+    if (activeTab) activeTab.classList.add('active');
+
+    // Force chart updates after making them visible
+    if (tab === 'latent' && latentChart) latentChart.resize();
+    if (tab === 'convergence' && convergenceChart) convergenceChart.resize();
 }
 
 async function fetchHistory() {

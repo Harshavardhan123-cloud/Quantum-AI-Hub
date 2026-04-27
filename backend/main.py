@@ -1,4 +1,4 @@
-import logging, os, datetime
+import logging, os, datetime, numpy as np
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -56,11 +56,24 @@ async def analyze_hebbian_batch(request: BatchRequest, db: Session = Depends(get
 @app.post("/api/quantum/gate")
 async def apply_gate(request: GateRequest, db: Session = Depends(get_db)):
     global qubit_state
-    qubit_state = QuantumLogic.apply_gate(qubit_state, request.gate)
-    theta, phi = QuantumLogic.state_to_bloch(qubit_state)
-    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate}, result_data={"theta": theta, "phi": phi}, description=f"Applied Gate {request.gate}"))
+    
+    # Simple target logic: X, H, Z on Q0. CNOT is 0->1.
+    target = 0
+    control = 0 if request.gate == "CNOT" else None
+    
+    qubit_state = QuantumLogic.apply_gate(qubit_state, request.gate, target=target, control=control)
+    theta, phi = QuantumLogic.state_to_bloch_q1(qubit_state)
+    probs = QuantumLogic.get_probabilities(qubit_state)
+    
+    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate}, result_data={"probabilities": probs, "theta": theta}, description=f"Quantum Op: {request.gate}"))
     db.commit()
-    return {"theta": theta, "phi": phi, "state_vector": [str(qubit_state[0]), str(qubit_state[1])]}
+    
+    return {
+        "theta": theta, 
+        "phi": phi, 
+        "probabilities": probs,
+        "labels": ["|00⟩", "|01⟩", "|10⟩", "|11⟩"]
+    }
 
 @app.get("/api/logs")
 async def get_logs(db: Session = Depends(get_db)):
