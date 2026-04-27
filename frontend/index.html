@@ -5,213 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum AI Hub | Elite Edition</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.321.0/dist/umd/lucide.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body id="page-home">
     <div id="particle-container"></div>
-    
-    <div id="app">
-        <nav class="navbar">
-        <div class="logo">QUANTUM<span>AI</span></div>
+
+    <nav class="navbar glass">
+        <div class="logo">
+            <span class="badge">ELITE</span>
+            QUANTUM <span style="color:var(--accent-primary)">AI</span>
+        </div>
         <div class="nav-links">
-            <a href="#quantum-logic">Engine</a>
-            <a href="#hebbian-workspace">Neural</a>
-            <a href="#history-section">Logs</a>
+            <a href="/" class="active">Home</a>
+            <a href="/quantum">Quantum Logic</a>
+            <a href="/hebbian">Hebbian Space</a>
+            <a href="/history">System History</a>
         </div>
     </nav>
 
-    <div class="hero">
-        <div class="pre-title">Advancing Synthetic Cognition</div>
-        <h1 class="gradient-text">Unified Intelligence<br>Platform</h1>
-        <p>A high-fidelity environment for simulating multi-qubit entanglement and unsupervised synaptic plasticity. Bridging the gap between qubit decoherence and neural optimization.</p>
-        <div class="cta-group">
-            <button class="btn-premium btn-cyan" onclick="scrollToSection('quantum-logic')">Initialize Workspace</button>
-            <button class="btn-premium btn-outline" onclick="scrollToSection('hebbian-workspace')">Neural Synapse</button>
+    <main class="hero">
+        <div class="hero-content">
+            <span class="pre-title">Advancing Synthetic Cognition</span>
+            <h1 class="gradient-text">Unified Intelligence Platform</h1>
+            <p>A high-fidelity environment for simulating quantum logic gates and unsupervised synaptic plasticity. Bridging the gap between qubit decoherence and neural optimization.</p>
+            <div class="cta-group">
+                <button class="btn-primary" onclick="location.href='/quantum'">Access Workspace</button>
+                <button class="btn-secondary" onclick="location.href='/hebbian'">Hebbian Engine</button>
+            </div>
         </div>
-    </div>
-    </div>
+    </main>
 
-        <section id="simulator" class="simulator-section">
-            <div class="section-container">
-                <div class="section-info">
-                    <h2 class="section-title">Quantum Logic Terminal</h2>
-                    <p>Interface with the high-dimensional Hilbert space. Apply unitary transformations, observe wave function evolution, and manage entanglement across multiple qubits.</p>
-                    
-                    <div class="field" style="margin-bottom: 20px;">
-                        <label>Register Depth (n)</label>
-                        <div class="virtual-select" id="depth-vs">
-                            <div class="vs-selected" onclick="toggleVirtualSelect('depth-vs')">3 Qubits (8 states)</div>
-                            <div class="vs-options glass" id="depth-vs-options">
-                                <div class="vs-option" onclick="selectVirtualOption(2, '2 Qubits (4 states)', 'depth-vs')">2 Qubits (4 states)</div>
-                                <div class="vs-option active" onclick="selectVirtualOption(3, '3 Qubits (8 states)', 'depth-vs')">3 Qubits (8 states)</div>
-                                <div class="vs-option" onclick="selectVirtualOption(4, '4 Qubits (16 states)', 'depth-vs')">4 Qubits (16 states)</div>
-                                <div class="vs-option" onclick="selectVirtualOption(5, '5 Qubits (32 states)', 'depth-vs')">5 Qubits (32 states)</div>
-                            </div>
-                        </div>
-                        <input type="hidden" id="qubit-depth" value="3">
-                    </div>
-                    
-                    <div class="quantum-controls-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div class="field">
-                            <label>Target Qubit</label>
-                            <div class="virtual-select" id="target-vs">
-                                <div class="vs-selected" onclick="toggleVirtualSelect('target-vs')">Qubit 0</div>
-                                <div class="vs-options glass" id="target-vs-options"></div>
-                            </div>
-                            <input type="hidden" id="target-qubit" value="0">
-                        </div>
-                        <div class="field" id="control-field" style="display: none;">
-                            <label>Control Qubit</label>
-                            <div class="virtual-select" id="control-vs">
-                                <div class="vs-selected" onclick="toggleVirtualSelect('control-vs')">Qubit 1</div>
-                                <div class="vs-options glass" id="control-vs-options"></div>
-                            </div>
-                            <input type="hidden" id="control-qubit" value="1">
-                        </div>
-                    </div>
-
-                    <div class="gate-grid">
-                        <button class="gate-btn" onclick="executeGate('H')">H <span class="tooltip">Hadamard</span></button>
-                        <button class="gate-btn" onclick="showControlField('CNOT')">CX <span class="tooltip">CNOT</span></button>
-                        <button class="gate-btn" onclick="executeGate('X')">X <span class="tooltip">Pauli-X</span></button>
-                        <button class="gate-btn" onclick="executeGate('Y')">Y <span class="tooltip">Pauli-Y</span></button>
-                        <button class="gate-btn" onclick="executeGate('Z')">Z <span class="tooltip">Pauli-Z</span></button>
-                        <button class="gate-btn action" onclick="executeGate('SUPERPOSITION')">Σ <span class="tooltip">Superposition</span></button>
-                        <button class="gate-btn reset" onclick="executeGate('RESET')">⟲ <span class="tooltip">Reset</span></button>
-                    </div>
-                    <button id="exec-cnot" class="btn-primary" onclick="executeGate('CNOT')" style="display:none; width:100%; margin-bottom: 20px;">Confirm CNOT Operation</button>
-
-                    <div id="circuit-board" class="circuit-view glass" style="margin-top: 20px; padding: 10px; min-height: 120px; overflow-x: auto;">
-                        <!-- Dynamic Wires -->
-                    </div>
-
-                    <div class="state-readout glass">
-                        <div class="readout-item">
-                            <span class="label">State Vector:</span>
-                            <span id="vector-display" class="code">|0⟩</span>
-                        </div>
-                        <div class="readout-item">
-                            <span class="label">Bloch Coords:</span>
-                            <span id="coords-display" class="code">θ:0.0, φ:0.0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="simulator-view glass">
-                    <div id="bloch-canvas-container"></div>
-                    <div class="quantum-analytics" style="padding: 10px; height: 180px;">
-                        <canvas id="quantumProbChart"></canvas>
-                    </div>
-                </div>
+    <footer class="footer glass">
+        <div class="footer-grid">
+            <div class="status-indicator">
+                <span class="dot"></span> 
+                CORE NEURAL SEQUENCE: <span style="color:var(--accent-primary)">ACTIVE</span>
             </div>
-        </section>
-
-        <section id="hebbian" class="hebbian-section">
-            <div class="section-header">
-                <h2 class="section-title">Synaptic Plasticity Workbench</h2>
-                <p>Simulating unsupervised feature extraction via biologically-inspired learning rules.</p>
+            <div class="copyright">
+                &copy; 2026 QUANTUM AI HUB | ELITE EDITION v12
             </div>
-            
-            <div class="hebbian-grid">
-                <div class="config-panel glass">
-                    <h3>Engine Configuration</h3>
-                    <div class="field">
-                        <label>Learning Rule</label>
-                        <select id="rule-select" class="glass-select">
-                            <option value="oja">Oja's Rule (Normalization)</option>
-                            <option value="sanger">Sanger's Rule (PCA)</option>
-                            <option value="bcm">BCM Rule (Selectivity)</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Neural Input Stream</label>
-                        <div class="vector-input">
-                            <button class="btn-elite-action" onclick="runAnalysis()">
-                                <span>Single Analysis</span>
-                            </button>
-                            <button class="btn-primary" onclick="runBatchAnalysis()" style="margin-top:10px; width:100%">
-                                <span>Execute Batch Simulation</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="analysis-stats" class="stats-display glass">
-                        <div class="stat">
-                            <span class="stat-label">Projection Variance</span>
-                            <div class="stat-bar"><div id="variance-bar" style="width: 0%"></div></div>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Synaptic Activity</span>
-                            <div class="stat-bar"><div id="activity-bar" style="width: 0%"></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="visualization-panel glass">
-                    <div class="panel-tabs">
-                        <button id="tab-matrix" class="tab-btn active" onclick="switchHebbianTab('matrix')">Weight Matrix</button>
-                        <button id="tab-latent" class="tab-btn" onclick="switchHebbianTab('latent')">Latent Space</button>
-                        <button id="tab-convergence" class="tab-btn" onclick="switchHebbianTab('convergence')">Convergence</button>
-                    </div>
-                    <div id="matrix-view" class="matrix-container">
-                        <div id="weight-matrix" class="weight-matrix"></div>
-                    </div>
-                    <div id="latent-view" class="chart-container glass" style="display:none; padding:20px;">
-                        <canvas id="latentChart"></canvas>
-                    </div>
-                    <div id="convergence-view" class="chart-container glass" style="display:none; padding:20px;">
-                        <canvas id="convergenceChart"></canvas>
-                    </div>
-                    <div id="trace-log" class="trace-log code">
-                        > Neural core initialized...<br>
-                        > Awaiting synaptic signal...
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="history" class="history-section">
-            <div class="section-header">
-                <h2 class="section-title">Simulation History</h2>
-                <p>Retrieving persistent records from the SQLite database core.</p>
-            </div>
-            <div class="history-container glass">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Operation</th>
-                            <th>Details</th>
-                            <th>State/Projection</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-body">
-                        <!-- Entries populated from DB -->
-                    </tbody>
-                </table>
-                <div class="table-actions" style="margin-top: 20px; text-align: center;">
-                    <button class="btn-secondary" onclick="fetchHistory()">Refresh Database Logs</button>
-                </div>
-            </div>
-        </section>
-
-        <footer class="footer glass">
-            <div class="footer-grid">
-                <div class="brand">
-                    <span class="quantum-text">QUANTUM</span>AI
-                </div>
-                <div class="status-indicator">
-                    <span class="dot"></span> Backend Engine: Online
-                </div>
-            </div>
-        </footer>
-    </div>
+        </div>
+    </footer>
 
     <script src="main.js"></script>
 </body>

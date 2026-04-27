@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Logic | Quantum AI Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body id="page-quantum">
+    <div id="particle-container"></div>
+
+    <nav class="navbar glass">
+        <div class="logo">
+            <span class="badge">ELITE</span>
+            QUANTUM <span style="color:var(--accent-primary)">AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/quantum" class="active">Quantum Logic</a>
+            <a href="/hebbian">Hebbian Space</a>
+            <a href="/history">System History</a>
+        </div>
+    </nav>
+
+    <main class="content-wrapper">
+        <section class="simulator-section">
+            <div class="section-container">
+                <div class="section-info">
+                    <h2 class="section-title">Quantum Logic Terminal</h2>
+                    <p>Interface with the high-dimensional Hilbert space. Apply unitary transformations, observe wave function evolution, and manage entanglement.</p>
+                    
+                    <div class="field" style="margin-bottom: 20px;">
+                        <label>Register Depth (n)</label>
+                        <div class="virtual-select" id="depth-vs">
+                            <div class="vs-selected" onclick="toggleVirtualSelect('depth-vs')">3 Qubits (8 states)</div>
+                            <div class="vs-options glass" id="depth-vs-options">
+                                <div class="vs-option" onclick="selectVirtualOption(2, '2 Qubits (4 states)', 'depth-vs')">2 Qubits (4 states)</div>
+                                <div class="vs-option active" onclick="selectVirtualOption(3, '3 Qubits (8 states)', 'depth-vs')">3 Qubits (8 states)</div>
+                                <div class="vs-option" onclick="selectVirtualOption(4, '4 Qubits (16 states)', 'depth-vs')">4 Qubits (16 states)</div>
+                                <div class="vs-option" onclick="selectVirtualOption(5, '5 Qubits (32 states)', 'depth-vs')">5 Qubits (32 states)</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="qubit-depth" value="3">
+                    </div>
+
+                    <div class="quantum-controls-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="field">
+                            <label>Target Qubit</label>
+                            <div class="virtual-select" id="target-vs">
+                                <div class="vs-selected" onclick="toggleVirtualSelect('target-vs')">Qubit 0</div>
+                                <div class="vs-options glass" id="target-vs-options"></div>
+                            </div>
+                            <input type="hidden" id="target-qubit" value="0">
+                        </div>
+                        <div class="field" id="control-field" style="display: none;">
+                            <label>Control Qubit</label>
+                            <div class="virtual-select" id="control-vs">
+                                <div class="vs-selected" onclick="toggleVirtualSelect('control-vs')">Qubit 1</div>
+                                <div class="vs-options glass" id="control-vs-options"></div>
+                            </div>
+                            <input type="hidden" id="control-qubit" value="1">
+                        </div>
+                    </div>
+
+                    <div class="gate-grid">
+                        <button class="gate-btn" onclick="executeGate('H')">H <span class="tooltip">Hadamard</span></button>
+                        <button class="gate-btn" onclick="showControlField('CNOT')">CX <span class="tooltip">CNOT</span></button>
+                        <button class="gate-btn" onclick="executeGate('X')">X <span class="tooltip">Pauli-X</span></button>
+                        <button class="gate-btn" onclick="executeGate('Y')">Y <span class="tooltip">Pauli-Y</span></button>
+                        <button class="gate-btn" onclick="executeGate('Z')">Z <span class="tooltip">Pauli-Z</span></button>
+                        <button class="gate-btn action" onclick="executeGate('SUPERPOSITION')">Σ <span class="tooltip">Superposition</span></button>
+                        <button class="gate-btn reset" onclick="executeGate('RESET')">⟲ <span class="tooltip">Reset</span></button>
+                    </div>
+                    <button id="exec-cnot" class="btn-primary" onclick="executeGate('CNOT')" style="display:none; width:100%; margin-bottom: 20px;">Confirm CNOT Operation</button>
+
+                    <div id="circuit-board" class="circuit-view glass" style="margin-top: 20px; padding: 10px; min-height: 120px; overflow-x: auto;"></div>
+
+                    <div class="state-readout glass">
+                        <div class="readout-item" id="vector-display">Basis: <span class="val">|ψ⟩</span> Type: <span class="val">Identity</span></div>
+                        <div class="readout-item" id="coords-display">Polar (θ): <span class="val">0.000</span>, Phase (φ): <span class="val">0.000</span></div>
+                    </div>
+                </div>
+                
+                <div class="simulator-view glass">
+                    <div id="bloch-canvas-container"></div>
+                    <div class="quantum-analytics" style="padding: 10px; height: 180px;">
+                        <canvas id="quantumProbChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div id="trace-log" class="trace-log glass"></div>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hebbian Engine | Quantum AI Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body id="page-hebbian">
+    <div id="particle-container"></div>
+
+    <nav class="navbar glass">
+        <div class="logo">
+            <span class="badge">ELITE</span>
+            QUANTUM <span style="color:var(--accent-primary)">AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/quantum">Quantum Logic</a>
+            <a href="/hebbian" class="active">Hebbian Space</a>
+            <a href="/history">System History</a>
+        </div>
+    </nav>
+
+    <main class="content-wrapper">
+        <section class="hebbian-section">
+            <div class="hebbian-grid">
+                <div class="config-panel glass">
+                    <h2 class="section-title">Hebbian Synaptic Engine</h2>
+                    <p>Simulate unsupervised learning using biological plasticity rules. Project high-dimensional neural activity into latent space.</p>
+                    
+                    <div class="field">
+                        <label>Learning Rule</label>
+                        <select id="rule-select" class="glass-select">
+                            <option value="oja">Oja's Rule (Principal Component)</option>
+                            <option value="sanger">Sanger's Rule (Recursive PCA)</option>
+                            <option value="bcm">BCM Rule (Bienenstock-Cooper-Munro)</option>
+                            <option value="hebbian">Standard Hebbian (Correlation)</option>
+                        </select>
+                    </div>
+
+                    <div class="action-buttons" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
+                        <button class="btn-elite-action" onclick="runAnalysis()"><span>Single Trial</span></button>
+                        <button class="btn-elite-action" onclick="runBatchAnalysis()" style="filter: hue-rotate(45deg);"><span>Batch Train</span></button>
+                    </div>
+
+                    <div class="stats-display glass" style="margin-top: 30px;">
+                        <div class="stat">
+                            <span class="stat-label">Projection Variance</span>
+                            <div class="stat-bar"><div id="variance-bar" style="width: 0%"></div></div>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Synaptic Activity (Mean)</span>
+                            <div class="stat-bar"><div id="activity-bar" style="width: 0%; background: var(--accent-secondary)"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visualization-panel glass">
+                    <div class="panel-tabs">
+                        <button id="tab-matrix" class="tab-btn active" onclick="switchHebbianTab('matrix')">Weight Matrix</button>
+                        <button id="tab-latent" class="tab-btn" onclick="switchHebbianTab('latent')">Latent Space</button>
+                        <button id="tab-convergence" class="tab-btn" onclick="switchHebbianTab('convergence')">Stability Curve</button>
+                    </div>
+
+                    <div id="matrix-view" class="matrix-container">
+                        <div id="weight-matrix" class="weight-matrix"></div>
+                    </div>
+
+                    <div id="latent-view" class="chart-container" style="display: none;">
+                        <canvas id="latentChart"></canvas>
+                    </div>
+
+                    <div id="convergence-view" class="chart-container" style="display: none;">
+                        <canvas id="convergenceChart"></canvas>
+                    </div>
+
+                    <div id="trace-log" class="trace-log"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>

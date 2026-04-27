@@ -1,6 +1,7 @@
 import logging, os, datetime, numpy as np
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
@@ -83,6 +84,26 @@ async def set_quantum_config(config: dict):
     num_qubits = max(1, min(6, config.get("n", 3)))
     qubit_state = QuantumLogic.get_initial_state(num_qubits)
     return {"status": "ok", "n": num_qubits}
+
+@app.get("/", response_class=HTMLResponse)
+async def get_index():
+    with open("../frontend/index.html") as f:
+        return f.read()
+
+@app.get("/quantum", response_class=HTMLResponse)
+async def get_quantum():
+    with open("../frontend/quantum.html") as f:
+        return f.read()
+
+@app.get("/hebbian", response_class=HTMLResponse)
+async def get_hebbian():
+    with open("../frontend/hebbian.html") as f:
+        return f.read()
+
+@app.get("/history", response_class=HTMLResponse)
+async def get_history():
+    with open("../frontend/history.html") as f:
+        return f.read()
 
 @app.get("/api/logs")
 async def get_logs(db: Session = Depends(get_db)):

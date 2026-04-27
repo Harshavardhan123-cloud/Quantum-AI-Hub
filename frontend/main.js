@@ -22,17 +22,33 @@ function saveToVirtualDB(type, input, result, description) {
 // --- Initialization ---
 
 function init() {
-    try {
+    const page = document.body.id;
+    initParticleField();
+    
+    if (page === 'page-quantum') {
         initBlochSphere();
-        initParticleField();
         initCharts();
-        updateQubitCount(); // Initial wire generation
+        updateQubitCount();
         setupEventListeners();
-        logTrace("Neural core sequence initialized...");
-        logTrace("Awaiting synaptic signal instructions...");
-    } catch (err) {
-        console.error("Initialization failed:", err);
-        logTrace("System initialization error: Check console.", "error");
+        logTrace("Quantum Terminal Ready.");
+    } else if (page === 'page-hebbian') {
+        initCharts();
+        setupHebbianMatrix();
+        logTrace("Hebbian Workbench Ready.");
+    } else if (page === 'page-history') {
+        fetchHistory();
+        logTrace("Systems Logs Active.");
+    }
+}
+
+function setupHebbianMatrix() {
+    const matrix = document.getElementById('weight-matrix');
+    if(!matrix) return;
+    matrix.innerHTML = '';
+    for (let i = 0; i < 100; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'weight-cell';
+        matrix.appendChild(cell);
     }
 }
 
@@ -194,19 +210,15 @@ function updateSelectors(n) {
 function updateQuantumChart(probs, labels) {
     if (!quantumProbChart) return;
     
-    // For large Hilbert spaces (N=5), we skip intermediate labels to prevent overlap
-    const displayLabels = labels.map((l, i) => {
-        if (labels.length > 16) return (i % 4 === 0) ? l : "";
-        if (labels.length > 8) return (i % 2 === 0) ? l : "";
-        return l;
-    });
-
-    quantumProbChart.data.labels = displayLabels;
+    // For large N, we might want to sample or use a different visualization
+    // But for 32 states (N=5), Chart.js can still handle it if the labels are small
+    quantumProbChart.data.labels = labels;
     quantumProbChart.data.datasets[0].data = probs;
     
-    // Auto-adjust scale and bars
-    quantumProbChart.data.datasets[0].barThickness = probs.length > 16 ? 6 : (probs.length > 8 ? 12 : 30);
-    quantumProbChart.update('none');
+    // Adjust bar thickness for density
+    quantumProbChart.data.datasets[0].barThickness = probs.length > 8 ? 10 : 30;
+    
+    quantumProbChart.update();
 }
 
 // --- Universal Virtual Select Logic ---
@@ -579,6 +591,7 @@ function setupEventListeners() {
 
     // Matrix Initial Grid
     const matrix = document.getElementById('weight-matrix');
+    if(!matrix) return;
     for (let i = 0; i < 100; i++) {
         const cell = document.createElement('div');
         cell.className = 'weight-cell';
