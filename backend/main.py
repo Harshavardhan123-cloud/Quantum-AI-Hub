@@ -86,23 +86,11 @@ async def set_quantum_config(config: dict):
     return {"status": "ok", "n": num_qubits}
 
 @app.get("/", response_class=HTMLResponse)
-async def get_index():
-    with open("../frontend/index.html") as f:
-        return f.read()
-
 @app.get("/quantum", response_class=HTMLResponse)
-async def get_quantum():
-    with open("../frontend/quantum.html") as f:
-        return f.read()
-
 @app.get("/hebbian", response_class=HTMLResponse)
-async def get_hebbian():
-    with open("../frontend/hebbian.html") as f:
-        return f.read()
-
 @app.get("/history", response_class=HTMLResponse)
-async def get_history():
-    with open("../frontend/history.html") as f:
+async def get_spa_entry():
+    with open("../frontend/index.html") as f:
         return f.read()
 
 @app.get("/api/logs")

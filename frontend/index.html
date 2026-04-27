@@ -3,50 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum AI Hub | Elite Edition</title>
+    <title>Quantum AI Hub | Elite React v13</title>
+    
+    <!-- CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@mui/material@latest/umd/material-ui.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { margin: 0; background-color: #0a0a15; color: #fff; overflow-x: hidden; }
+        .MuiPaper-root { background-color: rgba(10,10,21,0.8) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important; }
+        .neon-text { text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+    </style>
 </head>
-<body id="page-home">
-    <div id="particle-container"></div>
+<body>
+    <div id="root"></div>
 
-    <nav class="navbar glass">
-        <div class="logo">
-            <span class="badge">ELITE</span>
-            QUANTUM <span style="color:var(--accent-primary)">AI</span>
-        </div>
-        <div class="nav-links">
-            <a href="/" class="active">Home</a>
-            <a href="/quantum">Quantum Logic</a>
-            <a href="/hebbian">Hebbian Space</a>
-            <a href="/history">System History</a>
-        </div>
-    </nav>
+    <script type="text/babel">
+        const { 
+            ThemeProvider, createTheme, CssBaseline, Box, AppBar, Toolbar, Typography, 
+            Button, Container, Grid, Paper, Dialog, IconButton, Table, TableBody, 
+            TableCell, TableHead, TableRow, Select, MenuItem, Fade, Grow, Modal
+        } = MaterialUI;
 
-    <main class="hero">
-        <div class="hero-content">
-            <span class="pre-title">Advancing Synthetic Cognition</span>
-            <h1 class="gradient-text">Unified Intelligence Platform</h1>
-            <p>A high-fidelity environment for simulating quantum logic gates and unsupervised synaptic plasticity. Bridging the gap between qubit decoherence and neural optimization.</p>
-            <div class="cta-group">
-                <button class="btn-primary" onclick="location.href='/quantum'">Access Workspace</button>
-                <button class="btn-secondary" onclick="location.href='/hebbian'">Hebbian Engine</button>
-            </div>
-        </div>
-    </main>
+        // --- Elite Neon Theme ---
+        const theme = createTheme({
+            palette: {
+                mode: 'dark',
+                primary: { main: '#00f2ff', contrastText: '#000' },
+                secondary: { main: '#7000ff' },
+                background: { default: '#0a0a15', paper: 'rgba(10, 10, 21, 0.8)' },
+                text: { primary: '#e0e0e0', secondary: '#888' }
+            },
+            typography: {
+                fontFamily: '"Inter", sans-serif',
+                h1: { fontFamily: 'Orbitron', fontWeight: 900 },
+                h2: { fontFamily: 'Orbitron', fontWeight: 700 },
+                button: { textTransform: 'none', fontWeight: 700 }
+            },
+            shape: { borderRadius: 12 }
+        });
 
-    <footer class="footer glass">
-        <div class="footer-grid">
-            <div class="status-indicator">
-                <span class="dot"></span> 
-                CORE NEURAL SEQUENCE: <span style="color:var(--accent-primary)">ACTIVE</span>
-            </div>
-            <div class="copyright">
-                &copy; 2026 QUANTUM AI HUB | ELITE EDITION v12
-            </div>
-        </div>
-    </footer>
+        // --- Reusable Zoomable Chart Dialog ---
+        function ZoomChartDialog({ open, onClose, chartData, title, type="bar" }) {
+            const canvasRef = React.useRef(null);
+            const chartRef = React.useRef(null);
 
-    <script src="main.js"></script>
+            React.useEffect(() => {
+                if (open && canvasRef.current) {
+                    if (chartRef.current) chartRef.current.destroy();
+                    chartRef.current = new Chart(canvasRef.current, {
+                        type: type,
+                        data: chartData,
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false,
+                            plugins: { 
+                                zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' } } 
+                            },
+                             scales: {
+                                y: { grid: { color: '#222' }, ticks: { color: '#888' } },
+                                x: { grid: { display: false }, ticks: { color: '#888' } }
+                            }
+                        }
+                    });
+                }
+            }, [open, chartData]);
+
+            return (
+                <Dialog fullScreen open={open} onClose={onClose} TransitionComponent={Fade}>
+                    <Box sx={{ p: 4, height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#0a0a15' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                            <Typography variant="h4" className="neon-text">{title} (Detailed Analysis)</Typography>
+                            <Button variant="outlined" color="primary" onClick={onClose}>Close Analyzer</Button>
+                        </Box>
+                        <Paper sx={{ flex: 1, p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <canvas ref={canvasRef}></canvas>
+                        </Paper>
+                        <Typography variant="caption" sx={{ mt: 2, textAlign: 'center', color: '#555' }}>
+                            SCROLL TO ZOOM | DRAG TO PAN | PRECISION MEASUREMENT ACTIVE
+                        </Typography>
+                    </Box>
+                </Dialog>
+            );
+        }
+
+        // --- Main App Shell ---
+        function App() {
+            const [path, setPath] = React.useState(window.location.pathname);
+
+            React.useEffect(() => {
+                const handlePopState = () => setPath(window.location.pathname);
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
+            }, []);
+
+            const navigate = (to) => {
+                window.history.pushState({}, '', to);
+                setPath(to);
+            };
+
+            return (
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                        <AppBar position="sticky" sx={{ background: 'rgba(5, 5, 10, 0.9)', backdropFilter: 'blur(10px)' }}>
+                            <Toolbar sx={{ justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Box sx={{ bgcolor: 'primary.main', color: 'black', px: 1, borderRadius: 1, fontSize: '0.7rem', fontWeight: 900 }}>ELITE</Box>
+                                    <Typography variant="h6" sx={{ fontFamily: 'Orbitron', letterSpacing: 2 }}>QUANTUM <span style={{ color: '#00f2ff' }}>AI</span></Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 3 }}>
+                                    <Button color="inherit" onClick={() => navigate('/')} sx={{ borderBottom: path === '/' ? '2px solid #00f2ff' : 'none' }}>Home</Button>
+                                    <Button color="inherit" onClick={() => navigate('/quantum')} sx={{ borderBottom: path === '/quantum' ? '2px solid #00f2ff' : 'none' }}>Quantum</Button>
+                                    <Button color="inherit" onClick={() => navigate('/hebbian')} sx={{ borderBottom: path === '/hebbian' ? '2px solid #00f2ff' : 'none' }}>Hebbian</Button>
+                                    <Button color="inherit" onClick={() => navigate('/history')} sx={{ borderBottom: path === '/history' ? '2px solid #00f2ff' : 'none' }}>History</Button>
+                                </Box>
+                            </Toolbar>
+                        </AppBar>
+
+                        <Container maxWidth="xl" sx={{ flex: 1, py: 4 }}>
+                            {path === '/' && <LandingPage onNavigate={navigate} />}
+                            {path === '/quantum' && <QuantumTerminal />}
+                            {path === '/hebbian' && <HebbianWorkbench />}
+                            {path === '/history' && <SystemLogs />}
+                        </Container>
+                    </Box>
+                </ThemeProvider>
+            );
+        }
+
+        // --- Sub-Pages (Simplified for logic) ---
+        function LandingPage({ onNavigate }) {
+            return (
+                <Box sx={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                    <Box>
+                        <Typography variant="overline" color="primary" sx={{ letterSpacing: 4 }}>Advancing Synthetic Cognition</Typography>
+                        <Typography variant="h1" sx={{ mt: 2, mb: 4, letterSpacing: -2 }}>Unified Intelligence Platform</Typography>
+                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                            <Button variant="contained" size="large" onClick={() => onNavigate('/quantum')}>Go To Lab</Button>
+                            <Button variant="outlined" size="large" onClick={() => onNavigate('/hebbian')}>Neural Engine</Button>
+                        </Box>
+                    </Box>
+                </Box>
+            );
+        }
+
+        // --- Quantum Terminal Component ---
+        function QuantumTerminal() {
+            const [n, setN] = React.useState(3);
+            const [target, setTarget] = React.useState(0);
+            const [control, setControl] = React.useState(1);
+            const [isCnot, setIsCnot] = React.useState(false);
+            const [probs, setProbs] = React.useState([1, 0, 0, 0, 0, 0, 0, 0]);
+            const [labels, setLabels] = React.useState(['|000⟩','|001⟩','|010⟩','|011⟩','|100⟩','|101⟩','|110⟩','|111⟩']);
+            const [bloch, setBloch] = React.useState({ theta: 0, phi: 0 });
+            const [history, setHistory] = React.useState([]);
+            const [zoomOpen, setZoomOpen] = React.useState(false);
+
+            const canvasRef = React.useRef(null);
+            const blochRef = React.useRef(null);
+
+            React.useEffect(() => {
+                initThree();
+                return () => { if(blochRef.current) blochRef.current.dispose(); };
+            }, []);
+
+            const initThree = () => {
+                const container = document.getElementById('bloch-3d');
+                if(!container) return;
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(45, 1.5, 0.1, 1000);
+                camera.position.set(2, 2, 2.5);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(400, 300);
+                container.appendChild(renderer.domElement);
+                
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(1, 32, 32),
+                    new THREE.MeshBasicMaterial({ color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.1 })
+                );
+                scene.add(sphere);
+                const arrow = new THREE.ArrowHelper(new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,0), 1, 0x00f2ff);
+                scene.add(arrow);
+                
+                blochRef.current = { renderer, arrow, scene, camera };
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    renderer.render(scene, camera);
+                };
+                animate();
+            };
+
+            const updateBloch = (t, p) => {
+                const v = new THREE.Vector3(Math.sin(t)*Math.cos(p), Math.cos(t), Math.sin(t)*Math.sin(p));
+                blochRef.current.arrow.setDirection(v);
+                setBloch({ theta: t, phi: p });
+            };
+
+            const exec = async (gate) => {
+                const res = await fetch('/api/quantum/gate', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ gate, target, control: gate === 'CNOT' ? control : null })
+                });
+                const data = await res.json();
+                setProbs(data.probabilities);
+                setLabels(data.labels || labels);
+                updateBloch(data.theta, data.phi);
+                setHistory(prev => [gate, ...prev].slice(0, 5));
+                setIsCnot(false);
+            };
+
+            const changeDepth = async (newN) => {
+                setN(newN);
+                await fetch('/api/quantum/config', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ n: newN })
+                });
+                exec('RESET');
+            };
+
+            const chartData = {
+                labels: labels,
+                datasets: [{ label: 'Probability', data: probs, backgroundColor: 'rgba(0, 242, 255, 0.5)', borderColor: '#00f2ff', borderWidth: 1 }]
+            };
+
+            return (
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={7}>
+                        <Paper sx={{ p: 4 }}>
+                            <Typography variant="h4" sx={{ mb: 2 }} className="neon-text">Quantum Terminal</Typography>
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="caption" color="primary">REGISTER SCALE</Typography>
+                                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                                    {[2,3,4,5].map(v => (
+                                        <Button key={v} variant={n === v ? "contained" : "outlined"} onClick={() => changeDepth(v)} size="small">N={v}</Button>
+                                    ))}
+                                </Box>
+                            </Box>
+
+                            <Grid container spacing={2} sx={{ mb: 3 }}>
+                                <Grid item xs={6}>
+                                    <Typography variant="caption" color="primary">TARGET QUBIT</Typography>
+                                    <Select fullWidth value={target} onChange={(e) => setTarget(e.target.value)} size="small" sx={{ mt: 1 }}>
+                                        {[...Array(n)].map((_, i) => <MenuItem key={i} value={i}>Qubit {i}</MenuItem>)}
+                                    </Select>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Typography variant="caption" color="primary">CONTROL QUBIT</Typography>
+                                    <Select fullWidth value={control} onChange={(e) => setControl(e.target.value)} size="small" sx={{ mt: 1 }}>
+                                        {[...Array(n)].map((_, i) => <MenuItem key={i} value={i}>Qubit {i}</MenuItem>)}
+                                    </Select>
+                                </Grid>
+                            </Grid>
+
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1.5 }}>
+                                {['H', 'X', 'Y', 'Z'].map(g => (
+                                    <Button key={g} variant="contained" color="secondary" onClick={() => exec(g)}>{g}</Button>
+                                ))}
+                                <Button variant="contained" color="primary" onClick={() => setIsCnot(true)}>CNOT</Button>
+                                <Button variant="outlined" color="primary" onClick={() => exec('SUPERPOSITION')}>Σ</Button>
+                                <Button variant="outlined" color="error" onClick={() => exec('RESET')}>RESET</Button>
+                            </Box>
+
+                            {isCnot && (
+                                <Fade in={true}>
+                                    <Button variant="contained" color="warning" fullWidth sx={{ mt: 2 }} onClick={() => exec('CNOT')}>Confirm Entanglement Pair [Q{control}➔Q{target}]</Button>
+                                </Fade>
+                            )}
+                        </Paper>
+
+                        <Paper sx={{ p: 3, mt: 3, minHeight: 150 }}>
+                            <Typography variant="caption" color="primary">CIRCUIT TIMELINE</Typography>
+                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                {history.map((g, i) => <Box key={i} sx={{ p: 1, border: '1px solid #00f2ff', borderRadius: 1, minWidth: 40, textAlign: 'center' }}>{g}</Box>)}
+                                {history.length === 0 && <Typography color="grey.700">Awaiting operators...</Typography>}
+                            </Box>
+                        </Paper>
+                    </Grid>
+
+                    <Grid item xs={12} md={5}>
+                        <Paper sx={{ p: 2, position: 'relative' }}>
+                            <div id="bloch-3d" style={{ height: 300 }}></div>
+                            <Box sx={{ position: 'absolute', bottom: 10, left: 10 }}>
+                                <Typography variant="body2" color="primary">θ: {bloch.theta.toFixed(3)}</Typography>
+                                <Typography variant="body2" color="primary">φ: {bloch.phi.toFixed(3)}</Typography>
+                            </Box>
+                        </Paper>
+
+                        <Paper sx={{ p: 3, mt: 3, height: 280, position: 'relative' }}>
+                            <Typography variant="caption" color="primary">STATE DISTRIBUTION</Typography>
+                            <Box sx={{ height: 200, mt: 2 }}>
+                                <ReactChartJS2.Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 1 } } }} />
+                            </Box>
+                            <Button 
+                                variant="outlined" 
+                                size="small" 
+                                sx={{ position: 'absolute', top: 10, right: 10 }}
+                                onClick={() => setZoomOpen(true)}
+                            >🔍 Zoom Analyzer</Button>
+                        </Paper>
+                    </Grid>
+
+                    <ZoomChartDialog 
+                        open={zoomOpen} 
+                        onClose={() => setZoomOpen(false)} 
+                        chartData={chartData} 
+                        title="Quantum Basis Probability Distribution" 
+                    />
+                </Grid>
+            );
+        }
+        // --- Reusable Chart Component (Native Canvas) ---
+        function EliteChart({ data, type="bar", onZoomClick }) {
+            const chartRef = React.useRef(null);
+            const canvasRef = React.useRef(null);
+
+            React.useEffect(() => {
+                if (canvasRef.current) {
+                    if (chartRef.current) chartRef.current.destroy();
+                    chartRef.current = new Chart(canvasRef.current, {
+                        type,
+                        data,
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true, grid: { color: '#222' } }, x: { grid: { display: false } } }
+                        }
+                    });
+                }
+            }, [data, type]);
+
+            return (
+                <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <canvas ref={canvasRef}></canvas>
+                    <IconButton 
+                        size="small" 
+                        sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'background.paper' }} 
+                        onClick={() => onZoomClick(data, type)}
+                    >
+                        <span style={{ fontSize: '1rem' }}>🔍</span>
+                    </IconButton>
+                </Box>
+            );
+        }
+
+        // --- Hebbian Workbench Component ---
+        function HebbianWorkbench() {
+            const [rule, setRule] = React.useState('oja');
+            const [latentData, setLatentData] = React.useState({ labels: [], datasets: [{ label: 'Latent Space', data: [], backgroundColor: '#7000ff' }] });
+            const [zoomData, setZoomData] = React.useState(null);
+
+            const runTrial = async () => {
+                const res = await fetch('/api/analyze/hebbian', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ data: Array.from({length:10}, () => Math.random()), rule })
+                });
+                const data = await res.json();
+                setLatentData(prev => ({
+                    labels: [...prev.labels, ""].slice(-20),
+                    datasets: [{ ...prev.datasets[0], data: [...prev.datasets[0].data, data.projection[0]].slice(-20) }]
+                }));
+            };
+
+            return (
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={4}>
+                        <Paper sx={{ p: 4, height: '100%' }}>
+                            <Typography variant="h4" sx={{ mb: 2 }} className="neon-text">Hebbian Engine</Typography>
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="caption" color="primary">LEARNING RULE</Typography>
+                                <Select fullWidth value={rule} onChange={(e) => setRule(e.target.value)} size="small" sx={{ mt: 1 }}>
+                                    <MenuItem value="oja">Oja's Rule</MenuItem>
+                                    <MenuItem value="sanger">Sanger's Rule</MenuItem>
+                                    <MenuItem value="hebbian">Standard Hebbian</MenuItem>
+                                </Select>
+                            </Box>
+                            <Button variant="contained" fullWidth onClick={runTrial} sx={{ py: 2 }}>Execute Neural Trial</Button>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        <Paper sx={{ p: 4, height: 400 }}>
+                            <Typography variant="caption" color="primary">SYNAPTIC PROJECTION (LATENT X)</Typography>
+                            <Box sx={{ height: 300, mt: 2 }}>
+                                <EliteChart data={latentData} type="line" onZoomClick={(d) => setZoomData(d)} />
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <ZoomChartDialog 
+                        open={!!zoomData} 
+                        onClose={() => setZoomData(null)} 
+                        chartData={zoomData || {}} 
+                        title="Neural Latent Space Expansion" 
+                        type="line"
+                    />
+                </Grid>
+            );
+        }
+
+        // --- System Logs Component ---
+        function SystemLogs() {
+            const [logs, setLogs] = React.useState([]);
+
+            React.useEffect(() => {
+                fetch('/api/logs').then(r => r.json()).then(setLogs);
+            }, []);
+
+            return (
+                <Paper sx={{ p: 4 }}>
+                    <Typography variant="h4" sx={{ mb: 4 }} className="neon-text">System History</Typography>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Timestamp</TableCell>
+                                <TableCell>Type</TableCell>
+                                <TableCell>Operation</TableCell>
+                                <TableCell>Result Snapshot</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {logs.map((log, i) => (
+                                <TableRow key={i}>
+                                    <TableCell>{new Date(log.timestamp).toLocaleTimeString()}</TableCell>
+                                    <TableCell><Box sx={{ bgcolor: log.type==='quantum'?'#00f2ff':'#7000ff', color:'black', px:1, borderRadius:0.5, display:'inline-block', fontSize:'0.7rem' }}>{log.type.toUpperCase()}</Box></TableCell>
+                                    <TableCell>{log.description}</TableCell>
+                                    <TableCell sx={{ fontFamily: 'Fira Code', fontSize: '0.7rem', color: 'grey.500' }}>{JSON.stringify(log.result_data).substring(0, 50)}...</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </Paper>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
