@@ -14,7 +14,7 @@ if not os.path.exists("logs"): os.makedirs("logs")
 logging.basicConfig(filename="logs/app.log", level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("QuantumHub")
 
-app = FastAPI(title="Quantum AI Hub Full-Stack")
+app = FastAPI(title="Quantum AI")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 def get_db():
@@ -85,19 +85,21 @@ async def set_quantum_config(config: dict):
     qubit_state = QuantumLogic.get_initial_state(num_qubits)
     return {"status": "ok", "n": num_qubits}
 
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+
 @app.get("/", response_class=HTMLResponse)
 @app.get("/quantum", response_class=HTMLResponse)
 @app.get("/hebbian", response_class=HTMLResponse)
 @app.get("/history", response_class=HTMLResponse)
 async def get_spa_entry():
-    with open("../frontend/index.html") as f:
-        return f.read()
+    if os.path.exists("../frontend/index.html"):
+        with open("../frontend/index.html") as f:
+            return f.read()
+    return "<h1>Front-end sequence not found. Check repository paths.</h1>"
 
 @app.get("/api/logs")
 async def get_logs(db: Session = Depends(get_db)):
     return db.query(SimulationLog).order_by(SimulationLog.timestamp.desc()).limit(10).all()
-
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn
