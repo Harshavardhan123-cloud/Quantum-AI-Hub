@@ -21,8 +21,9 @@ def get_db():
     try: yield db
     finally: db.close()
 
+num_qubits = 3
 hebbian_engine = HebbianEngine(10, 5)
-qubit_state = QuantumLogic.get_initial_state()
+qubit_state = QuantumLogic.get_initial_state(num_qubits)
 
 class HebbianRequest(BaseModel):
     data: List[float]
@@ -55,25 +56,34 @@ async def analyze_hebbian_batch(request: BatchRequest, db: Session = Depends(get
 
 @app.post("/api/quantum/gate")
 async def apply_gate(request: GateRequest, db: Session = Depends(get_db)):
-    global qubit_state
+    global qubit_state, num_qubits
     
-    # Simple target logic: X, H, Z on Q0. CNOT is 0->1.
     target = 0
-    control = 0 if request.gate == "CNOT" else None
+    control = 1 if request.gate == "CNOT" else None
     
-    qubit_state = QuantumLogic.apply_gate(qubit_state, request.gate, target=target, control=control)
-    theta, phi = QuantumLogic.state_to_bloch_q1(qubit_state)
+    if request.gate == "RESET":
+        qubit_state = QuantumLogic.get_initial_state(num_qubits)
+    else:
+        qubit_state = QuantumLogic.apply_gate(qubit_state, num_qubits, request.gate, target=target, control=control)
+    
+    theta, phi = QuantumLogic.state_to_bloch_idx(qubit_state, num_qubits, 0)
     probs = QuantumLogic.get_probabilities(qubit_state)
+    labels = QuantumLogic.get_labels(num_qubits)
     
-    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate}, result_data={"probabilities": probs, "theta": theta}, description=f"Quantum Op: {request.gate}"))
+    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate, "n": num_qubits}, result_data={"probs": probs}, description=f"Quantum N={num_qubits}: {request.gate}"))
     db.commit()
     
     return {
-        "theta": theta, 
-        "phi": phi, 
-        "probabilities": probs,
-        "labels": ["|00⟩", "|01⟩", "|10⟩", "|11⟩"]
+        "theta": theta, "phi": phi, 
+        "probabilities": probs, "labels": [f"|{l}⟩" for l in labels]
     }
+
+@app.post("/api/quantum/config")
+async def set_quantum_config(config: dict):
+    global num_qubits, qubit_state
+    num_qubits = max(1, min(6, config.get("n", 3)))
+    qubit_state = QuantumLogic.get_initial_state(num_qubits)
+    return {"status": "ok", "n": num_qubits}
 
 @app.get("/api/logs")
 async def get_logs(db: Session = Depends(get_db)):

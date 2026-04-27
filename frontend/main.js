@@ -26,6 +26,7 @@ function init() {
         initBlochSphere();
         initParticleField();
         initCharts();
+        updateQubitCount(); // Initial wire generation
         setupEventListeners();
         logTrace("Neural core sequence initialized...");
         logTrace("Awaiting synaptic signal instructions...");
@@ -174,13 +175,52 @@ async function applyGate(gateType) {
 
 function updateQuantumChart(probs, labels) {
     if (!quantumProbChart) return;
+    
+    // For large N, we might want to sample or use a different visualization
+    // But for 32 states (N=5), Chart.js can still handle it if the labels are small
     quantumProbChart.data.labels = labels;
     quantumProbChart.data.datasets[0].data = probs;
+    
+    // Adjust bar thickness for density
+    quantumProbChart.data.datasets[0].barThickness = probs.length > 8 ? 10 : 30;
+    
     quantumProbChart.update();
 }
 
+async function updateQubitCount() {
+    const n = parseInt(document.getElementById('qubit-depth').value);
+    logTrace(`Scaling Hilbert register to N=${n} qubits...`);
+    
+    try {
+        await fetch('/api/quantum/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ n: n })
+        });
+        
+        // Regenerate Wires
+        const board = document.getElementById('circuit-board');
+        board.innerHTML = '';
+        for(let i=0; i<n; i++) {
+            const wire = document.createElement('div');
+            wire.className = 'circuit-wire';
+            wire.id = `circuit-wire-${i}`;
+            board.appendChild(wire);
+        }
+        
+        resetQuantum();
+        logTrace(`System scale complete. $2^n$ basis states initialized.`);
+    } catch (err) {
+        logTrace("Scale error: " + err.message, "error");
+    }
+}
+
 function addGateToCircuit(gate) {
-    const wire = document.getElementById('circuit-wire-0');
+    // Apply gate visually to target (simplification: we show it on wire 0 unless it's CNOT)
+    const wireIdx = gate === 'CNOT' ? 0 : 0;
+    const wire = document.getElementById(`circuit-wire-${wireIdx}`);
+    if (!wire) return;
+    
     const gateEl = document.createElement('div');
     gateEl.className = 'gate-node';
     gateEl.innerText = gate;

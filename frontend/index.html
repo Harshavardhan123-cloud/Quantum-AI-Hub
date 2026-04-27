@@ -46,7 +46,17 @@
             <div class="section-container">
                 <div class="section-info">
                     <h2 class="section-title">Quantum Logic Terminal</h2>
-                    <p>Interface with the single-qubit state vector. Apply unitary transformations and observe wave function evolution on the Bloch Sphere.</p>
+                    <p>Interface with the $2^n$ Hilbert space. Apply unitary transformations, observe wave function evolution, and manage entanglement across multiple qubits.</p>
+                    
+                    <div class="field" style="margin-bottom: 20px;">
+                        <label>Register Depth (n)</label>
+                        <select id="qubit-depth" class="glass-select" onchange="updateQubitCount()">
+                            <option value="2">2 Qubits (4 states)</option>
+                            <option value="3" selected>3 Qubits (8 states)</option>
+                            <option value="4">4 Qubits (16 states)</option>
+                            <option value="5">5 Qubits (32 states)</option>
+                        </select>
+                    </div>
                     
                     <div class="gate-grid">
                         <button class="gate-btn" onclick="applyGate('H')">H <span class="tooltip">Hadamard</span></button>
@@ -54,12 +64,12 @@
                         <button class="gate-btn" onclick="applyGate('X')">X <span class="tooltip">Pauli-X</span></button>
                         <button class="gate-btn" onclick="applyGate('Y')">Y <span class="tooltip">Pauli-Y</span></button>
                         <button class="gate-btn" onclick="applyGate('Z')">Z <span class="tooltip">Pauli-Z</span></button>
+                        <button class="gate-btn action" onclick="applyGate('SUPERPOSITION')">Σ <span class="tooltip">All Superposition</span></button>
                         <button class="gate-btn reset" onclick="resetQuantum()">⟲ <span class="tooltip">Reset</span></button>
                     </div>
 
-                    <div class="circuit-view glass" style="margin-top: 20px; padding: 10px; height: 80px; overflow-x: auto;">
-                        <div id="circuit-wire-0" class="circuit-wire"></div>
-                        <div id="circuit-wire-1" class="circuit-wire"></div>
+                    <div id="circuit-board" class="circuit-view glass" style="margin-top: 20px; padding: 10px; min-height: 120px; overflow-x: auto;">
+                        <!-- Dynamic Wires -->
                     </div>
 
                     <div class="state-readout glass">
