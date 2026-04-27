@@ -85,16 +85,17 @@ async def set_quantum_config(config: dict):
     qubit_state = QuantumLogic.get_initial_state(num_qubits)
     return {"status": "ok", "n": num_qubits}
 
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+@app.get("/style.css")
+async def get_style():
+    return FileResponse("../frontend/style.css")
 
-@app.get("/", response_class=HTMLResponse)
-@app.get("/quantum", response_class=HTMLResponse)
-@app.get("/hebbian", response_class=HTMLResponse)
-@app.get("/history", response_class=HTMLResponse)
+@app.get("/")
+@app.get("/quantum")
+@app.get("/hebbian")
+@app.get("/history")
 async def get_spa_entry():
     if os.path.exists("../frontend/index.html"):
-        with open("../frontend/index.html") as f:
-            return f.read()
+        return FileResponse("../frontend/index.html")
     return "<h1>Front-end sequence not found. Check repository paths.</h1>"
 
 @app.get("/api/logs")
