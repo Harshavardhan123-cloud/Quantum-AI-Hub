@@ -57,6 +57,43 @@ body {
 .hebbian-grid { display: grid; grid-template-columns: 400px 1fr; gap: 40px; max-width: 1400px; margin: 40px auto; padding: 0 40px; }
 
 /* Quantum UI */
+.virtual-select { 
+    position: relative; width: 100%;
+}
+.vs-selected {
+    background: rgba(10, 10, 21, 0.8);
+    border: 1px solid var(--glass-border);
+    color: var(--accent-primary);
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-family: var(--font-code);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.vs-selected::after {
+    content: '▼'; font-size: 0.6rem; margin-left: 10px; opacity: 0.7;
+}
+.vs-selected:hover { border-color: var(--accent-primary); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+
+.vs-options {
+    position: absolute; top: 100%; left: 0; right: 0; 
+    margin-top: 5px; z-index: 100;
+    display: none; flex-direction: column;
+    overflow: hidden; border-radius: 8px; border-color: var(--accent-primary);
+}
+.vs-options.active { display: flex; animation: slideDown 0.2s ease-out; }
+
+.vs-option {
+    padding: 12px 15px; cursor: pointer; font-size: 0.8rem; font-family: var(--font-code); color: var(--text-mid);
+    transition: 0.2s; background: rgba(10, 10, 21, 0.95);
+}
+.vs-option:hover { background: rgba(0, 242, 255, 0.1); color: var(--accent-primary); }
+.vs-option.active { color: var(--accent-primary); background: rgba(0, 242, 255, 0.05); }
+
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
 .gate-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
 .gate-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; padding: 12px; border-radius: 8px; font-family: var(--font-code); cursor: pointer; transition: 0.2s; position: relative; }
 .gate-btn:hover { background: var(--accent-primary); color: black; }

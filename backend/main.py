@@ -31,6 +31,8 @@ class HebbianRequest(BaseModel):
 
 class GateRequest(BaseModel):
     gate: str
+    target: int = 0
+    control: Optional[int] = None
 
 class BatchRequest(BaseModel):
     samples: int = 20
@@ -58,19 +60,16 @@ async def analyze_hebbian_batch(request: BatchRequest, db: Session = Depends(get
 async def apply_gate(request: GateRequest, db: Session = Depends(get_db)):
     global qubit_state, num_qubits
     
-    target = 0
-    control = 1 if request.gate == "CNOT" else None
-    
     if request.gate == "RESET":
         qubit_state = QuantumLogic.get_initial_state(num_qubits)
     else:
-        qubit_state = QuantumLogic.apply_gate(qubit_state, num_qubits, request.gate, target=target, control=control)
+        qubit_state = QuantumLogic.apply_gate(qubit_state, num_qubits, request.gate, target=request.target, control=request.control)
     
-    theta, phi = QuantumLogic.state_to_bloch_idx(qubit_state, num_qubits, 0)
+    theta, phi = QuantumLogic.state_to_bloch_idx(qubit_state, num_qubits, request.target)
     probs = QuantumLogic.get_probabilities(qubit_state)
     labels = QuantumLogic.get_labels(num_qubits)
     
-    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate, "n": num_qubits}, result_data={"probs": probs}, description=f"Quantum N={num_qubits}: {request.gate}"))
+    db.add(SimulationLog(type="quantum", input_data={"gate": request.gate, "t": request.target, "c": request.control}, result_data={"probs": probs}, description=f"Gate {request.gate} on Q{request.target}"))
     db.commit()
     
     return {

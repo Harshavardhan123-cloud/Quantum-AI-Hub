@@ -152,24 +152,49 @@ const QuantumGHA = {
     }
 };
 
-async function applyGate(gateType) {
-    logTrace(`Executing Quantum Operator: [${gateType}]`);
+async function executeGate(gateType) {
+    const target = parseInt(document.getElementById('target-qubit').value);
+    const controlEl = document.getElementById('control-qubit');
+    const control = (gateType === 'CNOT' && controlEl) ? parseInt(controlEl.value) : null;
+    
+    if (gateType === 'CNOT' && target === control) {
+        logTrace("Control/Target collision.", "error"); return;
+    }
+
+    logTrace(`Projecting ${gateType} on Q${target}${control !== null ? ' (C:'+control+')' : ''}`);
     
     try {
         const response = await fetch('/api/quantum/gate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gate: gateType })
+            body: JSON.stringify({ gate: gateType, target: target, control: control })
         });
         const data = await response.json();
         
-        updateBlochVisual(data.theta, data.phi, ["|ψ⟩", " Hilbert State"]);
+        updateBlochVisual(data.theta, data.phi, ["|ψ⟩", `Target: Q${target}`]);
         updateQuantumChart(data.probabilities, data.labels);
-        addGateToCircuit(gateType);
+        addGateToCircuit(gateType, target, control);
         
-        logTrace(`Wave function transformed. Entanglement risk: ${gateType === 'CNOT' ? 'HIGH' : 'LOW'}`);
-    } catch (err) {
-        logTrace(`Quantum decoherence error: ${err.message}`, "error");
+        if (gateType === 'CNOT') {
+            document.getElementById('control-field').style.display = 'none';
+            document.getElementById('exec-cnot').style.display = 'none';
+        }
+    } catch (err) { logTrace(`Op Error: ${err.message}`, "error"); }
+}
+
+function showControlField() {
+    document.getElementById('control-field').style.display = 'block';
+    document.getElementById('exec-cnot').style.display = 'block';
+}
+
+function updateSelectors(n) {
+    const tSel = document.getElementById('target-qubit');
+    const cSel = document.getElementById('control-qubit');
+    if (!tSel || !cSel) return;
+    tSel.innerHTML = cSel.innerHTML = '';
+    for(let i=0; i<n; i++) {
+        const opt = `<option value="${i}">Qubit ${i}</option>`;
+        tSel.innerHTML += opt; cSel.innerHTML += opt;
     }
 }
 
@@ -186,6 +211,28 @@ function updateQuantumChart(probs, labels) {
     
     quantumProbChart.update();
 }
+
+// --- Virtual Select Logic ---
+function toggleVirtualSelect() {
+    document.getElementById('vs-options').classList.toggle('active');
+}
+
+function selectVirtualOption(n, label) {
+    document.getElementById('qubit-depth').value = n;
+    document.querySelector('.vs-selected').innerText = label;
+    document.querySelectorAll('.vs-option').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('vs-options').classList.remove('active');
+    updateQubitCount();
+}
+
+// Close when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.virtual-select')) {
+        const options = document.getElementById('vs-options');
+        if (options) options.classList.remove('active');
+    }
+});
 
 async function updateQubitCount() {
     const n = parseInt(document.getElementById('qubit-depth').value);
@@ -210,22 +257,33 @@ async function updateQubitCount() {
         }
         
         resetQuantum();
+        updateSelectors(n);
         logTrace(`System scale complete. $2^n$ basis states initialized.`);
     } catch (err) {
         logTrace("Scale error: " + err.message, "error");
     }
 }
 
-function addGateToCircuit(gate) {
-    // Apply gate visually to target (simplification: we show it on wire 0 unless it's CNOT)
-    const wireIdx = gate === 'CNOT' ? 0 : 0;
-    const wire = document.getElementById(`circuit-wire-${wireIdx}`);
+function addGateToCircuit(gate, target, control) {
+    const wire = document.getElementById(`circuit-wire-${target}`);
     if (!wire) return;
-    
     const gateEl = document.createElement('div');
     gateEl.className = 'gate-node';
     gateEl.innerText = gate;
+    if (gate === 'CNOT') gateEl.style.borderColor = 'var(--accent-tertiary)';
     wire.appendChild(gateEl);
+
+    if (control !== null) {
+        const cWire = document.getElementById(`circuit-wire-${control}`);
+        if(cWire) {
+            const dot = document.createElement('div');
+            dot.className = 'gate-node';
+            dot.style.borderRadius = '50%';
+            dot.style.width = '12px'; dot.style.height = '12px';
+            dot.innerText = 'C';
+            cWire.appendChild(dot);
+        }
+    }
 }
 
 async function resetQuantum() {
