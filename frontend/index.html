@@ -46,17 +46,17 @@
             <div class="section-container">
                 <div class="section-info">
                     <h2 class="section-title">Quantum Logic Terminal</h2>
-                    <p>Interface with the $2^n$ Hilbert space. Apply unitary transformations, observe wave function evolution, and manage entanglement across multiple qubits.</p>
+                    <p>Interface with the high-dimensional Hilbert space. Apply unitary transformations, observe wave function evolution, and manage entanglement across multiple qubits.</p>
                     
                     <div class="field" style="margin-bottom: 20px;">
                         <label>Register Depth (n)</label>
-                        <div class="virtual-select" id="qubit-virtual-select">
-                            <div class="vs-selected" onclick="toggleVirtualSelect()">3 Qubits (8 states)</div>
-                            <div class="vs-options glass" id="vs-options">
-                                <div class="vs-option" data-value="2" onclick="selectVirtualOption(2, '2 Qubits (4 states)')">2 Qubits (4 states)</div>
-                                <div class="vs-option active" data-value="3" onclick="selectVirtualOption(3, '3 Qubits (8 states)')">3 Qubits (8 states)</div>
-                                <div class="vs-option" data-value="4" onclick="selectVirtualOption(4, '4 Qubits (16 states)')">4 Qubits (16 states)</div>
-                                <div class="vs-option" data-value="5" onclick="selectVirtualOption(5, '5 Qubits (32 states)')">5 Qubits (32 states)</div>
+                        <div class="virtual-select" id="depth-vs">
+                            <div class="vs-selected" onclick="toggleVirtualSelect('depth-vs')">3 Qubits (8 states)</div>
+                            <div class="vs-options glass" id="depth-vs-options">
+                                <div class="vs-option" onclick="selectVirtualOption(2, '2 Qubits (4 states)', 'depth-vs')">2 Qubits (4 states)</div>
+                                <div class="vs-option active" onclick="selectVirtualOption(3, '3 Qubits (8 states)', 'depth-vs')">3 Qubits (8 states)</div>
+                                <div class="vs-option" onclick="selectVirtualOption(4, '4 Qubits (16 states)', 'depth-vs')">4 Qubits (16 states)</div>
+                                <div class="vs-option" onclick="selectVirtualOption(5, '5 Qubits (32 states)', 'depth-vs')">5 Qubits (32 states)</div>
                             </div>
                         </div>
                         <input type="hidden" id="qubit-depth" value="3">

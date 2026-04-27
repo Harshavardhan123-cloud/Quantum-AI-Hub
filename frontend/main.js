@@ -194,15 +194,19 @@ function updateSelectors(n) {
 function updateQuantumChart(probs, labels) {
     if (!quantumProbChart) return;
     
-    // For large N, we might want to sample or use a different visualization
-    // But for 32 states (N=5), Chart.js can still handle it if the labels are small
-    quantumProbChart.data.labels = labels;
+    // For large Hilbert spaces (N=5), we skip intermediate labels to prevent overlap
+    const displayLabels = labels.map((l, i) => {
+        if (labels.length > 16) return (i % 4 === 0) ? l : "";
+        if (labels.length > 8) return (i % 2 === 0) ? l : "";
+        return l;
+    });
+
+    quantumProbChart.data.labels = displayLabels;
     quantumProbChart.data.datasets[0].data = probs;
     
-    // Adjust bar thickness for density
-    quantumProbChart.data.datasets[0].barThickness = probs.length > 8 ? 10 : 30;
-    
-    quantumProbChart.update();
+    // Auto-adjust scale and bars
+    quantumProbChart.data.datasets[0].barThickness = probs.length > 16 ? 6 : (probs.length > 8 ? 12 : 30);
+    quantumProbChart.update('none');
 }
 
 // --- Universal Virtual Select Logic ---
@@ -217,17 +221,14 @@ function selectVirtualOption(val, label, parentId) {
     const hidden = document.getElementById(parentId.replace('-vs', '-qubit'));
     if (hidden) hidden.value = val;
     
-    // Depth special case
-    if (parentId === 'qubit-virtual-select') {
-        const depthH = document.getElementById('qubit-depth');
-        if (depthH) depthH.value = val;
-    }
+    const depthHidden = document.getElementById('qubit-depth');
+    if (parentId === 'depth-vs' && depthHidden) depthHidden.value = val;
     
     parent.querySelector('.vs-selected').innerText = label;
     parent.querySelectorAll('.vs-option').forEach(el => el.classList.remove('active'));
     parent.querySelector('.vs-options').classList.remove('active');
     
-    if (parentId === 'qubit-virtual-select') updateQubitCount();
+    if (parentId === 'depth-vs') updateQubitCount();
 }
 
 window.addEventListener('click', (e) => {
