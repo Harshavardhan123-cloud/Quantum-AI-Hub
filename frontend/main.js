@@ -205,6 +205,7 @@ async function updateQubitCount() {
             const wire = document.createElement('div');
             wire.className = 'circuit-wire';
             wire.id = `circuit-wire-${i}`;
+            wire.setAttribute('data-q', `Q${i}`);
             board.appendChild(wire);
         }
         
@@ -234,17 +235,10 @@ async function resetQuantum() {
 }
 
 function updateBlochVisual(theta, phi, vector) {
-    // Smooth transition for the arrow
-    const x = Math.sin(theta) * Math.cos(phi);
-    const z = Math.sin(theta) * Math.sin(phi);
-    const y = Math.cos(theta);
-
-    // Using simple lerping or setDirection
-    arrow.setDirection(new THREE.Vector3(x, y, z));
+    if (arrow) arrow.setDirection(new THREE.Vector3(Math.sin(theta)*Math.cos(phi), Math.cos(theta), Math.sin(theta)*Math.sin(phi)));
     
-    // Update Readouts
-    document.getElementById('vector-display').innerText = `|ψ⟩ = ${vector[0].split('+')[0]} |0⟩ + ${vector[1].split('+')[0]} |1⟩`;
-    document.getElementById('coords-display').innerText = `θ: ${theta.toFixed(3)}, φ: ${phi.toFixed(3)}`;
+    document.getElementById('vector-display').innerHTML = `Basis: <span class="val">|ψ⟩</span> Type: <span class="val">${vector[1]}</span>`;
+    document.getElementById('coords-display').innerHTML = `Polar (θ): <span class="val">${theta.toFixed(3)}</span>, Phase (φ): <span class="val">${phi.toFixed(3)}</span>`;
 }
 
 // --- Hebbian Logic (Ported from Python) ---
