@@ -188,14 +188,7 @@ function showControlField() {
 }
 
 function updateSelectors(n) {
-    const tSel = document.getElementById('target-qubit');
-    const cSel = document.getElementById('control-qubit');
-    if (!tSel || !cSel) return;
-    tSel.innerHTML = cSel.innerHTML = '';
-    for(let i=0; i<n; i++) {
-        const opt = `<option value="${i}">Qubit ${i}</option>`;
-        tSel.innerHTML += opt; cSel.innerHTML += opt;
-    }
+    // Handled in universal logic below
 }
 
 function updateQuantumChart(probs, labels) {
@@ -212,27 +205,47 @@ function updateQuantumChart(probs, labels) {
     quantumProbChart.update();
 }
 
-// --- Virtual Select Logic ---
-function toggleVirtualSelect() {
-    document.getElementById('vs-options').classList.toggle('active');
+// --- Universal Virtual Select Logic ---
+function toggleVirtualSelect(id) {
+    const el = document.getElementById(id + '-options');
+    document.querySelectorAll('.vs-options').forEach(opt => { if(opt !== el) opt.classList.remove('active'); });
+    if(el) el.classList.toggle('active');
 }
 
-function selectVirtualOption(n, label) {
-    document.getElementById('qubit-depth').value = n;
-    document.querySelector('.vs-selected').innerText = label;
-    document.querySelectorAll('.vs-option').forEach(el => el.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById('vs-options').classList.remove('active');
-    updateQubitCount();
+function selectVirtualOption(val, label, parentId) {
+    const parent = document.getElementById(parentId);
+    const hidden = document.getElementById(parentId.replace('-vs', '-qubit'));
+    if (hidden) hidden.value = val;
+    
+    // Depth special case
+    if (parentId === 'qubit-virtual-select') {
+        const depthH = document.getElementById('qubit-depth');
+        if (depthH) depthH.value = val;
+    }
+    
+    parent.querySelector('.vs-selected').innerText = label;
+    parent.querySelectorAll('.vs-option').forEach(el => el.classList.remove('active'));
+    parent.querySelector('.vs-options').classList.remove('active');
+    
+    if (parentId === 'qubit-virtual-select') updateQubitCount();
 }
 
-// Close when clicking outside
 window.addEventListener('click', (e) => {
     if (!e.target.closest('.virtual-select')) {
-        const options = document.getElementById('vs-options');
-        if (options) options.classList.remove('active');
+        document.querySelectorAll('.vs-options').forEach(opt => opt.classList.remove('active'));
     }
 });
+
+function updateSelectors(n) {
+    const tOpts = document.getElementById('target-vs-options');
+    const cOpts = document.getElementById('control-vs-options');
+    if (!tOpts || !cOpts) return;
+    tOpts.innerHTML = cOpts.innerHTML = '';
+    for(let i=0; i<n; i++) {
+        tOpts.innerHTML += `<div class="vs-option" onclick="selectVirtualOption(${i}, 'Qubit ${i}', 'target-vs')">Qubit ${i}</div>`;
+        cOpts.innerHTML += `<div class="vs-option" onclick="selectVirtualOption(${i}, 'Qubit ${i}', 'control-vs')">Qubit ${i}</div>`;
+    }
+}
 
 async function updateQubitCount() {
     const n = parseInt(document.getElementById('qubit-depth').value);

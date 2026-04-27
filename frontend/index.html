@@ -65,15 +65,19 @@
                     <div class="quantum-controls-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div class="field">
                             <label>Target Qubit</label>
-                            <select id="target-qubit" class="glass-select" style="width:100%">
-                                <!-- Dynamic -->
-                            </select>
+                            <div class="virtual-select" id="target-vs">
+                                <div class="vs-selected" onclick="toggleVirtualSelect('target-vs')">Qubit 0</div>
+                                <div class="vs-options glass" id="target-vs-options"></div>
+                            </div>
+                            <input type="hidden" id="target-qubit" value="0">
                         </div>
                         <div class="field" id="control-field" style="display: none;">
                             <label>Control Qubit</label>
-                            <select id="control-qubit" class="glass-select" style="width:100%">
-                                <!-- Dynamic -->
-                            </select>
+                            <div class="virtual-select" id="control-vs">
+                                <div class="vs-selected" onclick="toggleVirtualSelect('control-vs')">Qubit 1</div>
+                                <div class="vs-options glass" id="control-vs-options"></div>
+                            </div>
+                            <input type="hidden" id="control-qubit" value="1">
                         </div>
                     </div>
 
