@@ -13,7 +13,11 @@ const QuantumLLM = () => {
   const runAttention = async () => {
     setLoading(true);
     try {
-      const r = await fetch('/api/qllm/attention', { method: 'POST' });
+      const r = await fetch('/api/qllm/attention', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] })
+      });
       setAttention(await r.json());
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -22,7 +26,11 @@ const QuantumLLM = () => {
   const runEntanglement = async () => {
     setLoading(true);
     try {
-      const r = await fetch('/api/qllm/entanglement', { method: 'POST' });
+      const r = await fetch('/api/qllm/entanglement', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token_indices: [10, 11, 12, 13, 14, 15, 16, 17] })
+      });
       setSpectrum(await r.json());
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -67,7 +75,7 @@ const QuantumLLM = () => {
                       borderRadius: 3,
                       border: '1px solid rgba(244, 114, 182, 0.1)' 
                     }}>
-                      {attention.matrix.flat().map((val, i) => (
+                      {attention.attention_weights.flat().map((val, i) => (
                         <motion.div 
                           key={i} 
                           initial={{ scale: 0 }}

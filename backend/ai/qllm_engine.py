@@ -152,6 +152,28 @@ class QLLMEngine:
             "avg_entropy": float(np.mean([cp["entropy"] for cp in collapse_probabilities]))
         }
     
+    def get_entanglement_spectrum(self, token_indices: List[int]) -> Dict:
+        """
+        Compute the entanglement spectrum (Schmidt coefficients) 
+        of the token embedding space.
+        """
+        n_tokens = len(token_indices)
+        E = np.array([self.embeddings[i % self.vocab_size] for i in token_indices])
+        # Perform SVD to get Schmidt coefficients
+        U, S, Vh = np.linalg.svd(E)
+        
+        # S contains the singular values; their squares are the eigenvalues
+        # of the reduced density matrix (Schmidt coefficients)
+        # Normalize S^2 to sum to 1 for probability distribution
+        s_squared = S**2
+        s_squared = s_squared / (s_squared.sum() + 1e-10)
+        
+        return {
+            "coefficients": s_squared.tolist(),
+            "levels": [f"λ{i}" for i in range(len(s_squared))],
+            "entropy": float(-np.sum(s_squared * np.log2(s_squared + 1e-10)))
+        }
+
     def get_vocab(self) -> Dict:
         """Return the full vocabulary with embedding norms."""
         return {

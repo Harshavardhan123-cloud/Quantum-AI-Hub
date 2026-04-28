@@ -229,6 +229,13 @@ async def qllm_attention(request: QLLMAttentionRequest, db: Session = Depends(ge
     db.commit()
     return result
 
+@app.post("/api/qllm/entanglement")
+async def qllm_entanglement(request: QLLMAttentionRequest, db: Session = Depends(get_db)):
+    result = qllm_engine.get_entanglement_spectrum(request.token_indices)
+    db.add(SimulationLog(type="qllm", input_data={"tokens": request.token_indices}, result_data={"entropy": result["entropy"]}, description="Quantum Entanglement Spectrum Analysis"))
+    db.commit()
+    return result
+
 @app.post("/api/qllm/generate")
 async def qllm_generate(request: QLLMGenerateRequest, db: Session = Depends(get_db)):
     result = qllm_engine.generate_text(request.seed_indices, request.max_length, request.temperature)
