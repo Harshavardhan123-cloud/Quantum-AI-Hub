@@ -1,4 +1,6 @@
 import logging, os, datetime, numpy as np
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
@@ -264,6 +266,22 @@ class ChatRequest(BaseModel):
 async def chat(request: ChatRequest):
     reply = await chat_with_grok(request.messages, request.page)
     return {"reply": reply}
+
+class ExplainRequest(BaseModel):
+    simulation_type: str
+    result_data: dict
+    context: Optional[str] = ""
+
+@app.post("/api/explain")
+async def explain_result(request: ExplainRequest):
+    prompt = [
+        {"role": "user", "content": f"""As a quantum physics and AI expert, explain the following simulation results for a {request.simulation_type} experiment. 
+        Data: {request.result_data}
+        Additional Context: {request.context}
+        Provide a concise, professional research insight that highlights the physical significance and implications of these results. Keep it under 150 words."""}
+    ]
+    explanation = await chat_with_grok(prompt, context_page=request.simulation_type)
+    return {"explanation": explanation}
 
 # ═══════════════════ SPA ROUTES ═══════════════════
 @app.get("/style.css")

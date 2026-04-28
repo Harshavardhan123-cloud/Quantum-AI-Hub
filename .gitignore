@@ -1,0 +1,24 @@
+# Environments
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Dependencies
+node_modules/
+frontend-app/node_modules/
+
+# Build outputs
+dist/
+frontend-app/dist/
+
+# Database
+*.db
+backend/*.db
+
+# Logs
+*.log
+backend/logs/
+
+# System
+.DS_Store

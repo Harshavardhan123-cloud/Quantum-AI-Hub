@@ -33,15 +33,15 @@ async def chat_with_grok(messages: List[Dict], context_page: str = "general") ->
     full_messages = [{"role": "system", "content": system}] + messages
     
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient() as client:
             response = await client.post(
-                GROK_API_URL,
+                "https://api.groq.com/openai/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {GROK_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "grok-3-mini-fast",
+                    "model": "llama-3.3-70b-versatile",
                     "messages": full_messages,
                     "max_tokens": 1024,
                     "temperature": 0.7
@@ -52,6 +52,9 @@ async def chat_with_grok(messages: List[Dict], context_page: str = "general") ->
                 data = response.json()
                 return data["choices"][0]["message"]["content"]
             else:
-                return f"Grok API returned status {response.status_code}. Please try again."
+                error_detail = response.text
+                print(f"Grok API Error {response.status_code}: {error_detail}")
+                return f"Grok API returned status {response.status_code}. Detail: {error_detail[:100]}"
     except Exception as e:
+        print(f"Grok Connection Error: {str(e)}")
         return f"Connection error: {str(e)}. Please check your network."
