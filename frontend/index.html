@@ -44,7 +44,7 @@
     </div>
 
     <script type="text/babel">
-        const { ThemeProvider, createTheme, CssBaseline, Box, AppBar, Toolbar, Typography, Button, Container, Dialog, IconButton, Fade, Table, TableBody, TableCell, TableHead, TableRow, Grid, Paper, Select, MenuItem, Divider, LinearProgress, CircularProgress, Slider, Chip } = MaterialUI;
+        const { ThemeProvider, createTheme, CssBaseline, Box, AppBar, Toolbar, Typography, Button, Container, Dialog, IconButton, Fade, Table, TableBody, TableCell, TableHead, TableRow, Grid, Paper, Select, MenuItem, Divider, LinearProgress, CircularProgress, Slider, Chip, TextField } = MaterialUI;
 
         const theme = createTheme({ palette: { mode: 'dark', primary: { main: '#00f2ff' }, secondary: { main: '#a855f7' }, error: { main: '#f472b6' }, warning: { main: '#fbbf24' }, background: { default: '#03030a', paper: '#0a0a1a' } }, typography: { fontFamily: 'Inter, sans-serif' } });
 
@@ -447,8 +447,94 @@
                         {path === '/qllm' && <QuantumLLM />}
                         {path === '/history' && <HistoryLogs />}
                     </Container>
+                    <GrokChatbot currentPage={path} />
                     <Box sx={{ p: 3, textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', color: 'grey.800', fontSize: '0.65rem', letterSpacing: 2 }}>QUANTUM AI ULTIMATE EDITION v18 | HARSHAVARDHAN CHATTE</Box>
                 </ThemeProvider>
+            );
+        }
+
+        // ═══════════════ GROK AI CHATBOT ═══════════════
+        function GrokChatbot({ currentPage }) {
+            const [open, setOpen] = React.useState(false);
+            const [msgs, setMsgs] = React.useState([]);
+            const [input, setInput] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const chatEndRef = React.useRef(null);
+
+            React.useEffect(() => { if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+
+            const send = async () => {
+                if (!input.trim() || loading) return;
+                const userMsg = { role: 'user', content: input.trim() };
+                const newMsgs = [...msgs, userMsg];
+                setMsgs(newMsgs); setInput(''); setLoading(true);
+                try {
+                    const r = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ messages: newMsgs.map(m => ({ role: m.role, content: m.content })), page: currentPage }) });
+                    const d = await r.json();
+                    setMsgs([...newMsgs, { role: 'assistant', content: d.reply }]);
+                } catch (e) { setMsgs([...newMsgs, { role: 'assistant', content: 'Connection error. Please try again.' }]); }
+                setLoading(false);
+            };
+
+            const handleKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+
+            return (
+                <Box>
+                    {/* Floating Button */}
+                    {!open && (
+                        <Box onClick={() => setOpen(true)} sx={{ position: 'fixed', bottom: 24, right: 24, width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #00f2ff, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,242,255,0.4)', zIndex: 9999, transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
+                            <Typography sx={{ fontSize: '1.5rem' }}>🤖</Typography>
+                        </Box>
+                    )}
+
+                    {/* Chat Panel */}
+                    {open && (
+                        <Box sx={{ position: 'fixed', bottom: 24, right: 24, width: 380, height: 520, bgcolor: 'rgba(8,8,20,0.97)', border: '1px solid rgba(0,242,255,0.2)', borderRadius: 3, display: 'flex', flexDirection: 'column', zIndex: 9999, boxShadow: '0 8px 40px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)', overflow: 'hidden' }}>
+                            {/* Header */}
+                            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,242,255,0.1)', background: 'linear-gradient(90deg, rgba(0,242,255,0.05), rgba(168,85,247,0.05))' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography sx={{ fontSize: '1.2rem' }}>🤖</Typography>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ fontFamily: 'Orbitron', color: '#00f2ff', fontSize: '0.75rem' }}>QUANTUM AI ASSISTANT</Typography>
+                                        <Typography variant="caption" sx={{ color: 'grey.600', fontSize: '0.6rem' }}>Powered by Grok</Typography>
+                                    </Box>
+                                </Box>
+                                <IconButton size="small" onClick={() => setOpen(false)} sx={{ color: 'grey.500' }}>✕</IconButton>
+                            </Box>
+
+                            {/* Messages */}
+                            <Box sx={{ flex: 1, overflow: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,242,255,0.2)', borderRadius: 2 } }}>
+                                {msgs.length === 0 && (
+                                    <Box sx={{ textAlign: 'center', py: 6 }}>
+                                        <Typography sx={{ fontSize: '2rem', mb: 2 }}>🤖</Typography>
+                                        <Typography variant="body2" sx={{ color: 'grey.500' }}>Ask me anything about quantum physics, mechanics, computing, ML, DL, or LLMs!</Typography>
+                                    </Box>
+                                )}
+                                {msgs.map((m, i) => (
+                                    <Box key={i} sx={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                                        <Paper sx={{ p: 1.5, maxWidth: '80%', bgcolor: m.role === 'user' ? 'rgba(0,242,255,0.1)' : 'rgba(168,85,247,0.08)', border: m.role === 'user' ? '1px solid rgba(0,242,255,0.2)' : '1px solid rgba(168,85,247,0.15)', borderRadius: m.role === 'user' ? '12px 12px 0 12px' : '12px 12px 12px 0' }}>
+                                            <Typography variant="body2" sx={{ fontSize: '0.8rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.content}</Typography>
+                                        </Paper>
+                                    </Box>
+                                ))}
+                                {loading && (
+                                    <Box sx={{ display: 'flex', gap: 0.5, p: 1 }}>
+                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#a855f7', animation: 'pulse 1s infinite' }} />
+                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#a855f7', animation: 'pulse 1s infinite 0.2s' }} />
+                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#a855f7', animation: 'pulse 1s infinite 0.4s' }} />
+                                    </Box>
+                                )}
+                                <div ref={chatEndRef} />
+                            </Box>
+
+                            {/* Input */}
+                            <Box sx={{ p: 1.5, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 1 }}>
+                                <TextField fullWidth size="small" placeholder="Ask about quantum..." value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey} disabled={loading} sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem', bgcolor: 'rgba(255,255,255,0.03)', '& fieldset': { borderColor: 'rgba(0,242,255,0.15)' }, '&:hover fieldset': { borderColor: 'rgba(0,242,255,0.3)' }, '&.Mui-focused fieldset': { borderColor: '#00f2ff' } } }} />
+                                <Button variant="contained" onClick={send} disabled={loading || !input.trim()} sx={{ minWidth: 44, bgcolor: 'primary.main', color: '#000' }}>▶</Button>
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
             );
         }
 

@@ -13,6 +13,7 @@ from ai.qm_engine import QMEngine
 from ai.qml_engine import QMLEngine
 from ai.qdl_engine import QDLEngine
 from ai.qllm_engine import QLLMEngine
+from ai.grok_chat import chat_with_grok
 from database import SessionLocal, SimulationLog
 
 if not os.path.exists("logs"): os.makedirs("logs")
@@ -253,6 +254,16 @@ async def get_stats(db: Session = Depends(get_db)):
     qdl = db.query(SimulationLog).filter(SimulationLog.type == "qdl").count()
     qllm = db.query(SimulationLog).filter(SimulationLog.type == "qllm").count()
     return {"total": total, "quantum": quantum, "hebbian": hebbian, "physics": physics, "mechanics": mechanics, "qml": qml, "qdl": qdl, "qllm": qllm}
+
+# ═══════════════════ GROK CHAT API ═══════════════════
+class ChatRequest(BaseModel):
+    messages: List[dict]
+    page: str = "general"
+
+@app.post("/api/chat")
+async def chat(request: ChatRequest):
+    reply = await chat_with_grok(request.messages, request.page)
+    return {"reply": reply}
 
 # ═══════════════════ SPA ROUTES ═══════════════════
 @app.get("/style.css")
