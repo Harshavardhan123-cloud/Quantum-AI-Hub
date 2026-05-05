@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Grid, Paper, Button, Select, MenuItem, Fade, Chip } from '@mui/material';
+import { Box, Typography, Grid, Paper, Button, Select, MenuItem, Fade, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from '@mui/material';
 import * as THREE from 'three';
 import QChart from '../components/QChart';
 import SectionTitle from '../components/SectionTitle';
@@ -14,6 +14,8 @@ const QuantumCircuit = () => {
   const [labels, setLabels] = useState(Array.from({ length: Math.pow(2, n) }).map((_, i) => `|${i.toString(2).padStart(n, '0')}⟩`));
   const [history, setHistory] = useState([]);
   const [blochState, setBlochState] = useState({ theta: 0, phi: 0 });
+  const [selectedGate, setSelectedGate] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const blochRef = useRef(null);
   const containerRef = useRef(null);
@@ -146,6 +148,50 @@ const QuantumCircuit = () => {
       }
     } catch (err) {
       console.error("Gate execution failed:", err);
+    }
+  };
+
+  const showGateDetail = (gateInfo) => {
+    setSelectedGate(gateInfo);
+    setIsDialogOpen(true);
+  };
+
+  const gateFormulas = {
+    'H': {
+      name: 'Hadamard Gate',
+      formula: 'H = 1/√2 [[1, 1], [1, -1]]',
+      desc: 'Creates an equal superposition of |0⟩ and |1⟩. Maps Z-basis to X-basis.',
+      matrix: [[ '1/√2', '1/√2' ], [ '1/√2', '-1/√2' ]]
+    },
+    'X': {
+      name: 'Pauli-X (NOT)',
+      formula: 'X = [[0, 1], [1, 0]]',
+      desc: 'Quantum equivalent of the NOT gate. Flips |0⟩ to |1⟩ and vice versa.',
+      matrix: [[ 0, 1 ], [ 1, 0 ]]
+    },
+    'Y': {
+      name: 'Pauli-Y',
+      formula: 'Y = [[0, -i], [i, 0]]',
+      desc: 'A bit and phase flip. Rotates the state around the Y-axis of the Bloch sphere.',
+      matrix: [[ 0, '-i' ], [ 'i', 0 ]]
+    },
+    'Z': {
+      name: 'Pauli-Z (Phase Flip)',
+      formula: 'Z = [[1, 0], [0, -1]]',
+      desc: 'Leaves |0⟩ unchanged and flips the phase of |1⟩ to -|1⟩.',
+      matrix: [[ 1, 0 ], [ 0, -1 ]]
+    },
+    'CNOT': {
+      name: 'Controlled-NOT',
+      formula: 'CNOT = |0⟩⟨0|⊗I + |1⟩⟨1|⊗X',
+      desc: 'Flips the target qubit if and only if the control qubit is |1⟩. Essential for entanglement.',
+      matrix: [[ 1, 0, 0, 0 ], [ 0, 1, 0, 0 ], [ 0, 0, 0, 1 ], [ 0, 0, 1, 0 ]]
+    },
+    'MEASURE': {
+      name: 'Measurement',
+      formula: 'P(i) = |⟨i|ψ⟩|²',
+      desc: 'Collapses the quantum state into a classical basis state according to Born\'s rule.',
+      matrix: null
     }
   };
 
@@ -289,6 +335,7 @@ const QuantumCircuit = () => {
                                 key={idx} 
                                 label={h.gate} 
                                 size="medium" 
+                                onClick={() => showGateDetail(h)}
                                 sx={{ 
                                   height: 32, 
                                   px: 1,
@@ -296,7 +343,9 @@ const QuantumCircuit = () => {
                                   bgcolor: h.gate === 'CNOT' ? 'primary.main' : 'secondary.main',
                                   color: '#fff',
                                   fontWeight: 900,
-                                  boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+                                  boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                                  cursor: 'help',
+                                  '&:hover': { transform: 'scale(1.1)', filter: 'brightness(1.2)' }
                                 }} 
                               />
                             ))}
@@ -360,6 +409,74 @@ const QuantumCircuit = () => {
           </Grid>
         </Grid>
       </Grid>
+
+      {/* Gate Detail Dialog */}
+      <Dialog 
+        open={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)}
+        PaperProps={{ 
+          sx: { 
+            bgcolor: 'rgba(10, 10, 20, 0.95)', 
+            backdropFilter: 'blur(20px)', 
+            border: '1px solid rgba(0, 242, 255, 0.2)',
+            borderRadius: 4,
+            minWidth: 400
+          } 
+        }}
+      >
+        <DialogTitle sx={{ fontFamily: 'Orbitron', color: 'primary.main', display: 'flex', alignItems: 'center', gap: 2 }}>
+          🚀 {selectedGate && gateFormulas[selectedGate.gate]?.name}
+        </DialogTitle>
+        <DialogContent>
+          {selectedGate && (
+            <Box>
+              <Typography variant="body2" sx={{ color: 'grey.400', mb: 3 }}>
+                {gateFormulas[selectedGate.gate]?.desc}
+              </Typography>
+              
+              <Divider sx={{ mb: 3, borderColor: 'rgba(255,255,255,0.05)' }} />
+              
+              <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 800, mb: 1, display: 'block' }}>UNITARY OPERATOR (U)</Typography>
+              <Box sx={{ 
+                p: 3, 
+                bgcolor: 'rgba(0,0,0,0.4)', 
+                borderRadius: 2, 
+                fontFamily: 'Fira Code', 
+                fontSize: '0.9rem',
+                color: '#fff',
+                textAlign: 'center',
+                border: '1px dashed rgba(255,255,255,0.1)'
+              }}>
+                {gateFormulas[selectedGate.gate]?.formula}
+              </Box>
+
+              {gateFormulas[selectedGate.gate]?.matrix && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 800, mb: 2, display: 'block' }}>MATRIX REPRESENTATION</Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${gateFormulas[selectedGate.gate].matrix[0].length}, 1fr)`, gap: 1 }}>
+                    {gateFormulas[selectedGate.gate].matrix.flat().map((val, i) => (
+                      <Box key={i} sx={{ p: 1, border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', bgcolor: 'rgba(255,255,255,0.02)', borderRadius: 1 }}>
+                        <Typography variant="caption" sx={{ fontFamily: 'Fira Code' }}>{val}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0, 242, 255, 0.05)', borderRadius: 2 }}>
+                <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>APPLICATION CONTEXT:</Typography>
+                <Typography variant="body2" sx={{ color: 'grey.300', fontSize: '0.75rem' }}>
+                  Target: Qubit {selectedGate.target}
+                  {selectedGate.control !== null && ` | Control: Qubit ${selectedGate.control}`}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setIsDialogOpen(false)} variant="contained" fullWidth sx={{ borderRadius: 2 }}>DISMISS</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
