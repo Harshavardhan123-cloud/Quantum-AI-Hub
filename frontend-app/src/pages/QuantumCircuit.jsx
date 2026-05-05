@@ -26,7 +26,7 @@ const QuantumCircuit = () => {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(2.5, 1.5, 2.5);
+    camera.position.set(2.0, 1.2, 2.0);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -91,19 +91,20 @@ const QuantumCircuit = () => {
     };
     animate();
 
-    const handleResize = () => {
+    const resizeObserver = new ResizeObserver(() => {
       if (containerRef.current && blochRef.current) {
         const w = containerRef.current.clientWidth;
         const h = containerRef.current.clientHeight;
+        if (w === 0 || h === 0) return;
         blochRef.current.camera.aspect = w / h;
         blochRef.current.camera.updateProjectionMatrix();
         blochRef.current.renderer.setSize(w, h);
       }
-    };
-    window.addEventListener('resize', handleResize);
+    });
+    resizeObserver.observe(containerRef.current);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       if (blochRef.current) {
         renderer.dispose();
         containerRef.current?.removeChild(renderer.domElement);
