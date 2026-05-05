@@ -224,20 +224,30 @@ const QuantumCircuit = () => {
               </Typography>
               
               <Box sx={{ mb: 4 }}>
-                <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, mb: 1, display: 'block' }}>REGISTER SCALE (N)</Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {[2,3,4,5].map(val => (
-                    <Button 
-                      key={val} 
-                      onClick={() => changeRegisterSize(val)}
-                      variant={n === val ? "contained" : "outlined"}
-                      size="small"
-                      sx={{ minWidth: 40, borderRadius: 1 }}
-                    >
-                      {val}
-                    </Button>
+                <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, mb: 1, display: 'block' }}>SYSTEM SCALE (n Qubits → 2ⁿ States)</Typography>
+                <Grid container spacing={1}>
+                  {[2,3,4,5,6].map(val => (
+                    <Grid item xs={12} key={val}>
+                      <Button 
+                        fullWidth
+                        onClick={() => changeRegisterSize(val)}
+                        variant={n === val ? "contained" : "outlined"}
+                        size="small"
+                        sx={{ 
+                          justifyContent: 'space-between', 
+                          px: 2, 
+                          py: 1,
+                          borderRadius: 2,
+                          borderWidth: 2,
+                          '&:hover': { borderWidth: 2 }
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ fontWeight: 900 }}>n = {val}</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.6 }}>{Math.pow(2, val)} States</Typography>
+                      </Button>
+                    </Grid>
                   ))}
-                </Box>
+                </Grid>
               </Box>
 
               <Grid container spacing={2} sx={{ mb: 4 }}>
