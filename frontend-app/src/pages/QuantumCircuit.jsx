@@ -10,8 +10,8 @@ const QuantumCircuit = () => {
   const [n, setN] = useState(3);
   const [target, setTarget] = useState(0);
   const [control, setControl] = useState(1);
-  const [probs, setProbs] = useState([1, 0, 0, 0, 0, 0, 0, 0]);
-  const [labels, setLabels] = useState(['|000⟩', '|001⟩', '|010⟩', '|011⟩', '|100⟩', '|101⟩', '|110⟩', '|111⟩']);
+  const [probs, setProbs] = useState(Array(Math.pow(2, n)).fill(0).map((_, i) => i === 0 ? 1 : 0));
+  const [labels, setLabels] = useState(Array.from({ length: Math.pow(2, n) }).map((_, i) => `|${i.toString(2).padStart(n, '0')}⟩`));
   const [history, setHistory] = useState([]);
   const [blochState, setBlochState] = useState({ theta: 0, phi: 0 });
   
@@ -146,9 +146,9 @@ const QuantumCircuit = () => {
   return (
     <Box>
       <SectionTitle icon="⚛️" title="Quantum Circuit Builder" subtitle="N-qubit register simulation with unitary gate operations and state diagnostics" />
-      <Grid container spacing={4}>
+      <Grid container spacing={5}>
         {/* Left: Controls */}
-        <Grid item xs={12} lg={4}>
+        <Grid item xs={12} xl={4}>
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
             <Paper sx={{ p: 4, position: 'relative', height: '100%', border: '1px solid rgba(255, 255, 255, 0.05)', bgcolor: 'rgba(255,255,255,0.02)' }}>
               <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: 'linear-gradient(90deg, #a855f7, #00f2ff)' }} />
@@ -248,8 +248,8 @@ const QuantumCircuit = () => {
         </Grid>
 
         {/* Right: Results */}
-        <Grid item xs={12} lg={8}>
-          <Grid container spacing={4}>
+        <Grid item xs={12} xl={8}>
+          <Grid container spacing={5}>
             {/* Top Row: Circuit Trace */}
             <Grid item xs={12}>
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
@@ -257,7 +257,7 @@ const QuantumCircuit = () => {
                   <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 800, mb: 2, display: 'block' }}>
                     CIRCUIT TRACE (DEPTH: {history.length})
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, overflowX: 'auto' }}>
                     {Array.from({ length: n }).map((_, i) => (
                       <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 900, minWidth: 30 }}>Q{i}</Typography>
@@ -320,8 +320,8 @@ const QuantumCircuit = () => {
                         }] 
                       }} 
                       type="bar" 
-                      title="Basis Distribution" 
-                      height={300} 
+                      title="State Vector Projections" 
+                      height={320} 
                     />
                   </Box>
                   <Box sx={{ mt: 'auto', textAlign: 'center' }}>
