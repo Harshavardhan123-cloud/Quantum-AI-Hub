@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Grid, Paper, Button, Select, MenuItem, Fade, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from '@mui/material';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import QChart from '../components/QChart';
 import SectionTitle from '../components/SectionTitle';
 import SimulationExplainer from '../components/SimulationExplainer';
@@ -34,6 +35,13 @@ const QuantumCircuit = () => {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     containerRef.current.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.8;
+    controls.enableZoom = true;
+    controls.enablePan = false;
 
     // Sphere
     const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
@@ -88,6 +96,7 @@ const QuantumCircuit = () => {
     const animate = () => {
       if (blochRef.current) {
         requestAnimationFrame(animate);
+        controls.update();
         renderer.render(scene, camera);
       }
     };

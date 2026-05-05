@@ -23,7 +23,7 @@ class QuantumLogic:
             if i == target:
                 operator = np.kron(operator, G)
             else:
-                operator = np.kron(operator, I)
+              operator = np.kron(operator, I)
         return operator
 
     @staticmethod
