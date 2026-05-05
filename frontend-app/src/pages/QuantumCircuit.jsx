@@ -306,42 +306,42 @@ const QuantumCircuit = () => {
               </motion.div>
             </Grid>
 
-            {/* Bottom Row: Diagnostics */}
-            <Grid item xs={12} md={6}>
+            {/* Bottom Row: Diagnostics - Now Full Width and Enlarged */}
+            <Grid item xs={12}>
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <Paper sx={{ p: 4, height: 550, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
-                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 3, display: 'block', letterSpacing: 2 }}>BLOCH SPHERE (Q{target})</Typography>
-                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                    <Box ref={containerRef} sx={{ width: '100%', height: 400, position: 'relative' }} />
+                <Paper sx={{ p: 5, height: 750, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 6 }}>
+                  <Typography variant="h5" sx={{ fontFamily: 'Orbitron', color: 'primary.main', fontWeight: 900, mb: 4, display: 'block', letterSpacing: 4, textAlign: 'center' }}>BLOCH SPHERE ANALYSIS (Q{target})</Typography>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', bgcolor: 'rgba(0,0,0,0.3)', borderRadius: 4, mb: 3 }}>
+                    <Box ref={containerRef} sx={{ width: '100%', height: 550, position: 'relative' }} />
                   </Box>
-                  <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: 'grey.600', display: 'block' }}>θ = {theta.toFixed(3)}</Typography>
-                    <Typography variant="caption" sx={{ color: 'grey.600', display: 'block' }}>φ = {phi.toFixed(3)}</Typography>
+                  <Box sx={{ mt: 2, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 6 }}>
+                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>THETA (θ): {theta.toFixed(4)} rad</Typography>
+                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>PHI (φ): {phi.toFixed(4)} rad</Typography>
                   </Box>
                 </Paper>
               </motion.div>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <Paper sx={{ p: 4, height: 550, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
-                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 3, display: 'block', letterSpacing: 2 }}>STATE PROBABILITY DENSITY</Typography>
-                  <Box sx={{ flex: 1 }}>
+                <Paper sx={{ p: 5, height: 750, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 6 }}>
+                  <Typography variant="h5" sx={{ fontFamily: 'Orbitron', color: 'primary.main', fontWeight: 900, mb: 4, display: 'block', letterSpacing: 4, textAlign: 'center' }}>STATE PROBABILITY DISTRIBUTION</Typography>
+                  <Box sx={{ flex: 1, bgcolor: 'rgba(0,0,0,0.3)', p: 4, borderRadius: 4, mb: 3 }}>
                     <QChart 
                       data={{ 
                         labels: Array.from({ length: Math.pow(2, n) }).map((_, i) => `|${i.toString(2).padStart(n, '0')}⟩`), 
                         datasets: [{ 
-                          label: 'Probability', 
+                          label: 'Probability Density', 
                           data: probs, 
-                          backgroundColor: 'rgba(0, 242, 255, 0.5)', 
+                          backgroundColor: 'rgba(0, 242, 255, 0.6)', 
                           borderColor: '#00f2ff', 
-                          borderWidth: 2,
-                          borderRadius: 6
+                          borderWidth: 3,
+                          borderRadius: 8
                         }] 
                       }} 
                       type="bar" 
-                      title="State Vector Projections" 
-                      height={380} 
+                      title="Quantum State Probability Vector" 
+                      height={500} 
                     />
                   </Box>
                   <Box sx={{ mt: 'auto', textAlign: 'center' }}>
