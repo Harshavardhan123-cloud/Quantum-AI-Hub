@@ -210,6 +210,35 @@ const QuantumCircuit = () => {
     } catch (e) { console.error(e); }
   };
 
+  // NEW: Update Bloch sphere when target qubit changes
+  useEffect(() => {
+    const updateBlochForTarget = async () => {
+      try {
+        const response = await fetch('/api/quantum/gate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gate: 'MEASURE', // Just to get current state without changing it
+            target,
+            control: null
+          })
+        });
+        const data = await response.json();
+        setBlochState({ theta: data.theta, phi: data.phi });
+        
+        if (blochRef.current) {
+          const direction = new THREE.Vector3(
+            Math.sin(data.theta) * Math.cos(data.phi),
+            Math.cos(data.theta),
+            Math.sin(data.theta) * Math.sin(data.phi)
+          );
+          blochRef.current.arrow.setDirection(direction);
+        }
+      } catch (err) { console.error(err); }
+    };
+    updateBlochForTarget();
+  }, [target]);
+
   const { theta, phi } = blochState;
 
   return (
