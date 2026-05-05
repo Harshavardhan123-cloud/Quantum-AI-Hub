@@ -227,23 +227,26 @@ const QuantumCircuit = () => {
                 <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, mb: 1, display: 'block' }}>SYSTEM SCALE (n Qubits → 2ⁿ States)</Typography>
                 <Grid container spacing={1}>
                   {[2,3,4,5,6].map(val => (
-                    <Grid item xs={12} key={val}>
+                    <Grid item xs={6} key={val}>
                       <Button 
                         fullWidth
                         onClick={() => changeRegisterSize(val)}
                         variant={n === val ? "contained" : "outlined"}
                         size="small"
                         sx={{ 
-                          justifyContent: 'space-between', 
-                          px: 2, 
+                          display: 'flex',
+                          flexDirection: 'column',
                           py: 1,
                           borderRadius: 2,
                           borderWidth: 2,
-                          '&:hover': { borderWidth: 2 }
+                          borderColor: n === val ? 'primary.main' : 'rgba(255,255,255,0.05)',
+                          bgcolor: n === val ? 'primary.main' : 'transparent',
+                          color: n === val ? '#000' : '#fff',
+                          '&:hover': { borderWidth: 2, bgcolor: n === val ? 'primary.main' : 'rgba(255,255,255,0.05)' }
                         }}
                       >
-                        <Typography variant="caption" sx={{ fontWeight: 900 }}>n = {val}</Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.6 }}>{Math.pow(2, val)} States</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 900, fontSize: '0.75rem' }}>n = {val}</Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.7 }}>{Math.pow(2, val)} States</Typography>
                       </Button>
                     </Grid>
                   ))}
