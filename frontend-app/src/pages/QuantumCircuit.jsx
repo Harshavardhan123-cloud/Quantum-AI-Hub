@@ -15,6 +15,7 @@ const QuantumCircuit = () => {
   const [labels, setLabels] = useState(Array.from({ length: Math.pow(2, n) }).map((_, i) => `|${i.toString(2).padStart(n, '0')}⟩`));
   const [history, setHistory] = useState([]);
   const [blochState, setBlochState] = useState({ theta: 0, phi: 0 });
+  const [manualState, setManualState] = useState({ theta: 0, phi: 0 });
   const [selectedGate, setSelectedGate] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
@@ -132,7 +133,8 @@ const QuantumCircuit = () => {
         body: JSON.stringify({
           gate,
           target,
-          control: gate === 'CNOT' ? control : null
+          control: gate === 'CNOT' ? control : null,
+          params: gate === 'SET_STATE' ? manualState : null
         })
       });
       const data = await response.json();
@@ -140,6 +142,7 @@ const QuantumCircuit = () => {
       setProbs(data.probabilities);
       setLabels(data.labels || labels);
       setBlochState({ theta: data.theta, phi: data.phi });
+      setManualState({ theta: data.theta, phi: data.phi });
 
       if (blochRef.current) {
         const direction = new THREE.Vector3(
@@ -234,6 +237,7 @@ const QuantumCircuit = () => {
         });
         const data = await response.json();
         setBlochState({ theta: data.theta, phi: data.phi });
+        setManualState({ theta: data.theta, phi: data.phi });
         
         if (blochRef.current) {
           const direction = new THREE.Vector3(
@@ -420,9 +424,50 @@ const QuantumCircuit = () => {
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', bgcolor: 'rgba(0,0,0,0.3)', borderRadius: 4, mb: 3 }}>
                     <Box ref={containerRef} sx={{ width: '100%', height: 550, position: 'relative' }} />
                   </Box>
+                  <Box sx={{ mt: 3, p: 3, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 2, display: 'block', textAlign: 'center' }}>MANUAL STATE PREPARATION</Typography>
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={5}>
+                        <Typography variant="caption" sx={{ color: 'grey.500', display: 'block', mb: 0.5 }}>THETA (0 to π)</Typography>
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          min="0" 
+                          max={Math.PI}
+                          value={manualState.theta}
+                          onChange={(e) => setManualState(prev => ({ ...prev, theta: parseFloat(e.target.value) }))}
+                          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0, 242, 255, 0.2)', color: '#fff', padding: '8px', borderRadius: '4px', outline: 'none' }}
+                        />
+                      </Grid>
+                      <Grid item xs={5}>
+                        <Typography variant="caption" sx={{ color: 'grey.500', display: 'block', mb: 0.5 }}>PHI (0 to 2π)</Typography>
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          min="0" 
+                          max={Math.PI * 2}
+                          value={manualState.phi}
+                          onChange={(e) => setManualState(prev => ({ ...prev, phi: parseFloat(e.target.value) }))}
+                          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0, 242, 255, 0.2)', color: '#fff', padding: '8px', borderRadius: '4px', outline: 'none' }}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Button 
+                          fullWidth 
+                          variant="contained" 
+                          size="small"
+                          onClick={() => executeGate('SET_STATE', manualState)}
+                          sx={{ height: '38px', mt: '18px', fontWeight: 900 }}
+                        >
+                          GO
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
                   <Box sx={{ mt: 2, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 6 }}>
-                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>THETA (θ): {theta.toFixed(4)} rad</Typography>
-                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>PHI (φ): {phi.toFixed(4)} rad</Typography>
+                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>READOUT θ: {theta.toFixed(4)}</Typography>
+                    <Typography variant="h6" sx={{ color: 'grey.500', fontFamily: 'Fira Code' }}>READOUT φ: {phi.toFixed(4)}</Typography>
                   </Box>
                 </Paper>
               </motion.div>

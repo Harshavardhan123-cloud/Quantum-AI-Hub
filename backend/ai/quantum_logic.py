@@ -75,23 +75,40 @@ class QuantumLogic:
     @staticmethod
     def state_to_bloch_idx(state, n_qubits, idx=0):
         # Physically accurate Bloch vector calculation using Pauli expectation values
-        # <σ> = <ψ| σ |ψ>
-        
-        # Get Pauli operators for the target qubit
         sigma_x = QuantumLogic.get_pauli_op(n_qubits, idx, "X")
         sigma_y = QuantumLogic.get_pauli_op(n_qubits, idx, "Y")
         sigma_z = QuantumLogic.get_pauli_op(n_qubits, idx, "Z")
         
-        # Calculate expectation values
         x = np.real(state.conj().T @ sigma_x @ state)
         y = np.real(state.conj().T @ sigma_y @ state)
         z = np.real(state.conj().T @ sigma_z @ state)
-        
-        # Convert Bloch vector (x, y, z) to spherical coordinates (theta, phi)
-        # z = cos(theta)
-        # x = sin(theta)cos(phi), y = sin(theta)sin(phi)
         
         theta = np.arccos(np.clip(z, -1.0, 1.0))
         phi = np.arctan2(y, x)
         
         return float(theta), float(phi)
+
+    @staticmethod
+    def set_state(state, n_qubits, target, theta, phi):
+        # Directly set the state of the target qubit while preserving others
+        # This replaces the target qubit's component with |ψ⟩ = cos(θ/2)|0⟩ + e^{iφ}sin(θ/2)|1⟩
+        alpha = np.cos(theta/2)
+        beta = np.exp(1j * phi) * np.sin(theta/2)
+        
+        new_state = np.zeros_like(state)
+        for i in range(2**n_qubits):
+            # Check if this state has target bit 0 or 1
+            if not ((i >> (n_qubits - 1 - target)) & 1):
+                # i corresponds to bit 0 at target
+                # j corresponds to bit 1 at target (all other bits same)
+                j = i | (1 << (n_qubits - 1 - target))
+                
+                # Original weights of the 'others' part
+                # w = sqrt(P(i) + P(j))
+                w = np.sqrt(abs(state[i])**2 + abs(state[j])**2)
+                if w < 1e-10: w = 1.0 # default to 1 if no probability there yet
+                
+                new_state[i] = alpha * w
+                new_state[j] = beta * w
+        
+        return new_state / np.linalg.norm(new_state)

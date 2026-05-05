@@ -47,6 +47,7 @@ class GateRequest(BaseModel):
     gate: str
     target: int = 0
     control: Optional[int] = None
+    params: Optional[dict] = None
 
 class BatchRequest(BaseModel):
     samples: int = 20
@@ -99,6 +100,10 @@ async def apply_gate(request: GateRequest, db: Session = Depends(get_db)):
     global qubit_state, num_qubits
     if request.gate == "RESET":
         qubit_state = QuantumLogic.get_initial_state(num_qubits)
+    elif request.gate == "SET_STATE" and request.params:
+        theta = request.params.get("theta", 0)
+        phi = request.params.get("phi", 0)
+        qubit_state = QuantumLogic.set_state(qubit_state, num_qubits, request.target, theta, phi)
     else:
         qubit_state = QuantumLogic.apply_gate(qubit_state, num_qubits, request.gate, target=request.target, control=request.control)
     theta, phi = QuantumLogic.state_to_bloch_idx(qubit_state, num_qubits, request.target)
