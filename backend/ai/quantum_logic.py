@@ -8,6 +8,25 @@ class QuantumLogic:
         return state
 
     @staticmethod
+    def get_pauli_op(n_qubits, target, op_type):
+        I = np.eye(2, dtype=complex)
+        X = np.array([[0, 1], [1, 0]], dtype=complex)
+        Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+        Z = np.array([[1, 0], [0, -1]], dtype=complex)
+        
+        gates = {"X": X, "Y": Y, "Z": Z}
+        G = gates.get(op_type, I)
+        
+        operator = np.array([[1]])
+        for i in range(n_qubits):
+            # Bit ordering: Q0 is the first bit (MSB in our format)
+            if i == target:
+                operator = np.kron(operator, G)
+            else:
+                operator = np.kron(operator, I)
+        return operator
+
+    @staticmethod
     def apply_gate(state, n_qubits, gate_type, target, control=None):
         I = np.eye(2, dtype=complex)
         X = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -18,25 +37,22 @@ class QuantumLogic:
         gates = {"X": X, "Y": Y, "Z": Z, "H": H}
         
         if gate_type == "CNOT" and control is not None:
-            # Multi-qubit CNOT construction
+            if target == control: return state
             dim = 2**n_qubits
             operator = np.eye(dim, dtype=complex)
             for i in range(dim):
-                # Check if control bit is 1 in binary representation
+                # Check if control bit is 1
                 if (i >> (n_qubits - 1 - control)) & 1:
-                    # Flip the target bit
                     j = i ^ (1 << (n_qubits - 1 - target))
                     operator[i, i] = 0
                     operator[i, j] = 1
             new_state = operator @ state
         elif gate_type == "SUPERPOSITION":
-            # Apply H to all qubits
             operator = H
             for _ in range(n_qubits - 1):
                 operator = np.kron(operator, H)
             new_state = operator @ state
         else:
-            # Single Qubit gate on target
             G = gates.get(gate_type, I)
             operator = np.array([[1]])
             for i in range(n_qubits):
@@ -58,16 +74,24 @@ class QuantumLogic:
 
     @staticmethod
     def state_to_bloch_idx(state, n_qubits, idx=0):
-        # Very simplified visualization: projects the N-qubit state to a representation of one qubit
-        # This isn't physically accurate for entangled states but serves the UI's Bloch sphere
-        # We look at the first two amplitudes where all other bits are 0
-        alpha = state[0]
-        beta = state[1 << (n_qubits - 1 - idx)]
-        norm = np.sqrt(abs(alpha)**2 + abs(beta)**2)
-        if norm < 1e-10: return 0.0, 0.0
-        alpha /= norm
-        beta /= norm
+        # Physically accurate Bloch vector calculation using Pauli expectation values
+        # <σ> = <ψ| σ |ψ>
         
-        theta = 2 * np.arccos(min(1.0, np.abs(alpha)))
-        phi = np.angle(beta / alpha) if np.abs(alpha) > 1e-10 else 0
+        # Get Pauli operators for the target qubit
+        sigma_x = QuantumLogic.get_pauli_op(n_qubits, idx, "X")
+        sigma_y = QuantumLogic.get_pauli_op(n_qubits, idx, "Y")
+        sigma_z = QuantumLogic.get_pauli_op(n_qubits, idx, "Z")
+        
+        # Calculate expectation values
+        x = np.real(state.conj().T @ sigma_x @ state)
+        y = np.real(state.conj().T @ sigma_y @ state)
+        z = np.real(state.conj().T @ sigma_z @ state)
+        
+        # Convert Bloch vector (x, y, z) to spherical coordinates (theta, phi)
+        # z = cos(theta)
+        # x = sin(theta)cos(phi), y = sin(theta)sin(phi)
+        
+        theta = np.arccos(np.clip(z, -1.0, 1.0))
+        phi = np.arctan2(y, x)
+        
         return float(theta), float(phi)
