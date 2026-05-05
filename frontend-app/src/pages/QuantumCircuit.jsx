@@ -34,11 +34,31 @@ const QuantumCircuit = () => {
     containerRef.current.appendChild(renderer.domElement);
 
     // Sphere
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 48, 48),
-      new THREE.MeshBasicMaterial({ color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.05 })
-    );
+    const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
+    const sphereMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0x00f2ff, 
+      transparent: true, 
+      opacity: 0.15, 
+      shininess: 100 
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     scene.add(sphere);
+
+    const wireframeMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0x00f2ff, 
+      wireframe: true, 
+      transparent: true, 
+      opacity: 0.2 
+    });
+    const wireframe = new THREE.Mesh(sphereGeometry, wireframeMaterial);
+    scene.add(wireframe);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0xffffff, 1.5);
+    pointLight.position.set(5, 5, 5);
+    scene.add(pointLight);
 
     // Axes
     const axisMaterial = new THREE.LineBasicMaterial({ color: 0x333333 });
@@ -56,8 +76,8 @@ const QuantumCircuit = () => {
       new THREE.Vector3(0, 0, 0),
       1,
       0x00f2ff,
-      0.1,
-      0.05
+      0.15,
+      0.08
     );
     scene.add(arrow);
 
@@ -292,7 +312,7 @@ const QuantumCircuit = () => {
                 <Paper sx={{ p: 4, height: 550, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
                   <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 3, display: 'block', letterSpacing: 2 }}>BLOCH SPHERE (Q{target})</Typography>
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                    <Box ref={containerRef} sx={{ width: '100%', height: '100%', position: 'relative' }} />
+                    <Box ref={containerRef} sx={{ width: '100%', height: 400, position: 'relative' }} />
                   </Box>
                   <Box sx={{ mt: 2, textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: 'grey.600', display: 'block' }}>θ = {theta.toFixed(3)}</Typography>
