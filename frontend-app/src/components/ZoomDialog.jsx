@@ -12,6 +12,8 @@ const ZoomDialog = ({ open, onClose, chartData, title, type = "bar" }) => {
         chartInstance.current.destroy();
       }
       
+      const hasY1 = chartData.datasets?.some(d => d.yAxisID === 'y1');
+      
       chartInstance.current = new Chart(chartRef.current, {
         type,
         data: chartData,
@@ -20,19 +22,25 @@ const ZoomDialog = ({ open, onClose, chartData, title, type = "bar" }) => {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              labels: {
-                color: '#ccc',
-              },
+              display: type === 'pie' || type === 'doughnut' || (chartData.datasets?.length > 1),
+              labels: { color: '#ccc', font: { family: 'Fira Code' } },
             },
           },
           scales: type !== 'pie' && type !== 'doughnut' ? {
             y: {
               grid: { color: 'rgba(255, 255, 255, 0.05)' },
-              ticks: { color: '#888' }
+              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
             },
+            y1: hasY1 ? {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
+            } : undefined,
             x: {
               grid: { display: false },
-              ticks: { color: '#888' }
+              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
             }
           } : undefined
         },
@@ -52,7 +60,7 @@ const ZoomDialog = ({ open, onClose, chartData, title, type = "bar" }) => {
           </Button>
         </Box>
         <Box sx={{ flex: 1, bgcolor: '#000', p: 3, borderRadius: 2, border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <canvas ref={chartRef}></canvas>
+          <canvas ref={chartRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
         </Box>
       </Box>
     </Dialog>
