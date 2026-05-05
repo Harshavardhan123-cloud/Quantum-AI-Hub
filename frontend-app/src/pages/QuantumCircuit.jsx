@@ -274,27 +274,29 @@ const QuantumCircuit = () => {
             {/* Top Row: Circuit Trace */}
             <Grid item xs={12}>
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-                <Paper sx={{ p: 3, bgcolor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', minHeight: 180 }}>
-                  <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 800, mb: 2, display: 'block' }}>
-                    CIRCUIT TRACE (DEPTH: {history.length})
+                <Paper sx={{ p: 4, bgcolor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', minHeight: 300, borderRadius: 4 }}>
+                  <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 900, mb: 4, display: 'block', letterSpacing: 2 }}>
+                    QUANTUM CIRCUIT TRACE (n={n} Qubits | 2ⁿ={Math.pow(2, n)} States)
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, overflowX: 'auto' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, p: 2, overflowX: 'auto' }}>
                     {Array.from({ length: n }).map((_, i) => (
-                      <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 900, minWidth: 30 }}>Q{i}</Typography>
-                        <Box sx={{ height: '1px', flex: 1, bgcolor: 'rgba(255,255,255,0.1)', position: 'relative' }}>
+                      <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 900, minWidth: 50 }}>Q{i}</Typography>
+                        <Box sx={{ height: '2px', flex: 1, bgcolor: 'rgba(255,255,255,0.15)', position: 'relative' }}>
                           <Box sx={{ position: 'absolute', top: -10, left: 0, display: 'flex', gap: 1 }}>
                             {history.filter(h => h.target === i || h.control === i).map((h, idx) => (
                               <Chip 
                                 key={idx} 
                                 label={h.gate} 
-                                size="small" 
+                                size="medium" 
                                 sx={{ 
-                                  height: 20, 
-                                  fontSize: '0.6rem', 
+                                  height: 32, 
+                                  px: 1,
+                                  fontSize: '0.8rem', 
                                   bgcolor: h.gate === 'CNOT' ? 'primary.main' : 'secondary.main',
                                   color: '#fff',
-                                  fontWeight: 900
+                                  fontWeight: 900,
+                                  boxShadow: '0 0 10px rgba(0,0,0,0.5)'
                                 }} 
                               />
                             ))}
