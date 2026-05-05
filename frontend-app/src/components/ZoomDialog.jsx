@@ -8,43 +8,47 @@ const ZoomDialog = ({ open, onClose, chartData, title, type = "bar" }) => {
 
   useEffect(() => {
     if (open && chartRef.current) {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-      
-      const hasY1 = chartData.datasets?.some(d => d.yAxisID === 'y1');
-      
-      chartInstance.current = new Chart(chartRef.current, {
-        type,
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: type === 'pie' || type === 'doughnut' || (chartData.datasets?.length > 1),
-              labels: { color: '#ccc', font: { family: 'Fira Code' } },
+      const timer = setTimeout(() => {
+        if (!chartRef.current) return;
+        if (chartInstance.current) {
+          chartInstance.current.destroy();
+        }
+        
+        const hasY1 = chartData.datasets?.some(d => d.yAxisID === 'y1');
+        
+        chartInstance.current = new Chart(chartRef.current, {
+          type,
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: type === 'pie' || type === 'doughnut' || (chartData.datasets?.length > 1),
+                labels: { color: '#ccc', font: { family: 'Fira Code' } },
+              },
             },
+            scales: type !== 'pie' && type !== 'doughnut' ? {
+              y: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
+              },
+              y1: hasY1 ? {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
+              } : undefined,
+              x: {
+                grid: { display: false },
+                ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
+              }
+            } : undefined
           },
-          scales: type !== 'pie' && type !== 'doughnut' ? {
-            y: {
-              grid: { color: 'rgba(255, 255, 255, 0.05)' },
-              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
-            },
-            y1: hasY1 ? {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              grid: { drawOnChartArea: false },
-              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
-            } : undefined,
-            x: {
-              grid: { display: false },
-              ticks: { color: '#888', font: { family: 'Fira Code', size: 14 } }
-            }
-          } : undefined
-        },
-      });
+        });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [open, chartData, type]);
 
