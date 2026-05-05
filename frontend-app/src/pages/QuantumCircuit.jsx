@@ -198,6 +198,8 @@ const QuantumCircuit = () => {
   const changeRegisterSize = async (newN) => {
     setN(newN);
     setHistory([]);
+    setTarget(0);
+    setControl(newN > 1 ? 1 : 0);
     try {
       await fetch('/api/quantum/config', {
         method: 'POST',
@@ -273,9 +275,10 @@ const QuantumCircuit = () => {
                     value={control} 
                     onChange={(e) => setControl(e.target.value)}
                     size="small"
+                    disabled={n < 2}
                     sx={{ bgcolor: 'rgba(255,255,255,0.03)' }}
                   >
-                    {Array.from({ length: n }).map((_, i) => <MenuItem key={i} value={i}>Qubit {i}</MenuItem>)}
+                    {Array.from({ length: n }).map((_, i) => <MenuItem key={i} value={i} disabled={i === target}>Qubit {i} {i === target ? '(Target)' : ''}</MenuItem>)}
                   </Select>
                 </Grid>
               </Grid>
