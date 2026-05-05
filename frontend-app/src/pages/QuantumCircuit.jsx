@@ -289,8 +289,8 @@ const QuantumCircuit = () => {
             {/* Bottom Row: Diagnostics */}
             <Grid item xs={12} md={6}>
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <Paper sx={{ p: 3, height: 450, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, mb: 2, display: 'block' }}>BLOCH SPHERE (Q{target})</Typography>
+                <Paper sx={{ p: 4, height: 550, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
+                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 3, display: 'block', letterSpacing: 2 }}>BLOCH SPHERE (Q{target})</Typography>
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
                     <Box ref={containerRef} sx={{ width: '100%', height: '100%', position: 'relative' }} />
                   </Box>
@@ -304,8 +304,8 @@ const QuantumCircuit = () => {
 
             <Grid item xs={12} md={6}>
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <Paper sx={{ p: 3, height: 450, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, mb: 2, display: 'block' }}>STATE PROBABILITY DENSITY</Typography>
+                <Paper sx={{ p: 4, height: 550, display: 'flex', flexDirection: 'column', bgcolor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 4 }}>
+                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 900, mb: 3, display: 'block', letterSpacing: 2 }}>STATE PROBABILITY DENSITY</Typography>
                   <Box sx={{ flex: 1 }}>
                     <QChart 
                       data={{ 
@@ -321,7 +321,7 @@ const QuantumCircuit = () => {
                       }} 
                       type="bar" 
                       title="State Vector Projections" 
-                      height={320} 
+                      height={380} 
                     />
                   </Box>
                   <Box sx={{ mt: 'auto', textAlign: 'center' }}>

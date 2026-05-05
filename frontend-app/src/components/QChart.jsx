@@ -30,11 +30,11 @@ const QChart = ({ data, type = "bar", title, height = 250 }) => {
           scales: type !== 'pie' && type !== 'doughnut' ? {
             y: {
               grid: { color: 'rgba(255, 255, 255, 0.05)' },
-              ticks: { color: '#666', font: { size: 10 } }
+              ticks: { color: '#888', font: { size: 12, family: 'Fira Code' } }
             },
             x: {
               grid: { display: false },
-              ticks: { color: '#666', font: { size: 10 } }
+              ticks: { color: '#888', font: { size: 11, family: 'Fira Code' } }
             }
           } : undefined
         }
