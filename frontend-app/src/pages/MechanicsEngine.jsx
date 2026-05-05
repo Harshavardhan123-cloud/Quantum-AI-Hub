@@ -4,6 +4,7 @@ import QChart from '../components/QChart';
 import SectionTitle from '../components/SectionTitle';
 import SimulationExplainer from '../components/SimulationExplainer';
 import { motion } from 'framer-motion';
+import { Terminal, BrainCircuit } from 'lucide-react';
 
 const MechanicsEngine = () => {
   const [uncData, setUncData] = useState(null);
